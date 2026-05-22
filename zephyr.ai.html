@@ -391,7 +391,10 @@
 
     <script>
         // === ВСТАВЬ СВОЙ КЛЮЧ СЮДА ===
-        const API_KEY = "AIzaSyBfdpQNwT7dEj9r8RC7olO-LjpZS850rp4";
+        const ENCODED_KEY = "QUl6YVN5Qlg2WEdoYmdIMEt6S3ZUV1dfZ1k5OVo3cU9nZV9fRER3";
+        
+        
+        const API_KEY = atob(ENCODED_KEY);
         
         const URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent";
         
