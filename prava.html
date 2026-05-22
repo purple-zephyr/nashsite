@@ -1,73 +1,414 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Покупка прав онлайн</title>
+    <title>Покупка прав online</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            text-align: center;
+            background-image: url("69603056_uyfydu6.svg");
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 20px;
+            box-sizing: border-box;
+            color: aliceblue;
+        }
+
+        h1 {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.23);
+            border-radius: 20px;
+            background-color: rgba(255, 255, 255, 0.06);
+            margin: 0 auto 40px auto;
+            padding: 20px;
+            max-width: 800px;
+            font-size: clamp(35px, 7vw, 75px);
+            font-weight: 700;
+        }
+
+        .btns {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .btn {
+            transition: all 0.25s ease-in-out;
+            color: aliceblue;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.23);
+            border-radius: 25px;
+            padding: 30px 25px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            box-sizing: border-box;
+            min-height: 250px;
+        }
+
+        .card-title {
+            font-size: clamp(20px, 2.5vw, 26px);
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 20px;
+        }
+
+        .card-title s {
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .card-price {
+            display: inline-block;
+            margin-top: auto;
+            font-size: clamp(24px, 3vw, 32px);
+            font-weight: 800;
+            background-color: rgba(255, 255, 255, 0.12);
+            padding: 10px 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .btn:hover {
+            background-color: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.45);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:hover .card-price {
+            background-color: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        /* --- ОБЩИЙ СТИЛЬ ДЛЯ СЛОЕВ МОДАЛОК --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: flex-start;
+            overflow-y: auto;
+            z-index: 1000;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        /* --- СТИЛЬ ПРОМЕЖУТОЧНОГО ОКНА (ИЗ ТВОЕГО НАБРОСКА) --- */
+        .info-box {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 30px;
+            width: 100%;
+            max-width: 450px;
+            color: #fff;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            margin: auto 0;
+            text-align: center;
+        }
+
+        .info-header {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 25px;
+            text-transform: uppercase;
+        }
+
+        .info-body {
+            font-size: 22px;
+            font-weight: 800;
+            line-height: 1.5;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+
+        /* Кнопки промежуточного окна */
+        .ok-btn {
+            background: #e0f2fe;
+            color: #0369a1;
+            font-size: 18px;
+            font-weight: 700;
+            padding: 15px 35px;
+            border-radius: 50px;
+            width: 100%;
+            margin-bottom: 15px;
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: background 0.2s;
+        }
+        .ok-btn:hover { background: #ffffff; }
+
+        .cancel-link {
+            color: rgba(255, 255, 255, 0.6);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            text-decoration: none;
+        }
+        .cancel-link:hover { color: #fff; }
+
+
+        /* --- СТИЛЬ РЕАЛЬНОГО ЧЕКА --- */
+        .receipt-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin: auto 0;
+        }
+
+        .receipt {
+            background: #ffffff;
+            color: #000000;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 35px 25px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            border: 1px solid #ccc;
+            text-align: left;
+            box-sizing: border-box;
+            letter-spacing: -0.5px;
+        }
+
+        .receipt-header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            line-height: 1.3;
+            border-bottom: 2px dashed #000;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .receipt-line {
+            border-bottom: 1px dashed #000;
+            margin: 15px 0;
+        }
+
+        .receipt-text {
+            font-size: 13px;
+            line-height: 1.4;
+            text-align: justify;
+        }
+
+        .receipt-footer {
+            border-top: 2px dashed #000;
+            margin-top: 20px;
+            padding-top: 15px;
+            text-align: center;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .modal-btns {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .action-btn {
+            padding: 12px 30px;
+            border-radius: 10px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            transition: opacity 0.2s;
+        }
+        .action-btn:hover { opacity: 0.9; }
+
+        .print-btn { background: #0056b3; color: white; }
+        .close-btn { background: #495057; color: white; }
+
+        /* НАСТРОЙКА ПЕЧАТИ */
+        @media print {
+            body {
+                background: none !important;
+                color: #000 !important;
+                padding: 0 !important;
+            }
+            h1, .btns, .modal-overlay, .modal-btns, #infoModal {
+                display: none !important;
+            }
+            #receiptModal {
+                display: flex !important;
+                position: static !important;
+                background: none !important;
+                backdrop-filter: none !important;
+            }
+            .receipt {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 auto !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+            }
+        }
+    </style>
 </head>
-<style>
-body{
-
-text-align: center;
-
-background-image: url("69603056_uyfydu6.svg");
-background-repeat:no-repeat;
-background-size:  cover;
-}
-
-.btn{
-transition: ease-in-out 0.03s;
-
-color: aliceblue;
-backdrop-filter: blur(10px);
-background-color:   #ffffff10;
-border: 1px #ffffff3c;
-border-radius: 20px;
-   
-
-
-
-}
-
-.btn:active{
-transform: scale(0.9);
-
-}
-
-.btns  {
-
-display: flex;
-gap: 20px;
-padding: 20px;
-justify-content: center;
-margin: 0;
-
-
-}
-h1 {
-backdrop-filter: blur(10px);
-border: 1px #ffffff3c;
-border-radius: 20px;
-background-color: #ffffff10;
-margin: 10px;
-padding: 10px;
-
-}
-
-
-
-
-</style>
 <body>
-    <h1 style="font-size: 80px;color: aliceblue;">Купить права</h1>
-    <div class="btns">
-    <button  class="btn"><h3 style="font-size: 50px;" >Купить права <s>премиум плюс экстра</s> 200₽</h3></button>
+
+    <h1>Купить права</h1>
     
-    <button  class="btn"><h3 style="font-size: 50px;" >Купить права премиум <s>плюс экстра</s> 5000₽</h3></button>
+    <div class="btns">
+        <button class="btn" onclick="startPurchase('Категория B (Эконом)', '200.00 руб.')">
+            <span class="card-title">Купить права <s>премиум плюс экстра</s></span>
+            <span class="card-price">200₽</span>
+        </button>
+        
+        <button class="btn" onclick="startPurchase('Категория B (Премиум)', '5 000.00 руб.')">
+            <span class="card-title">Купить права премиум <s>плюс экстра</s></span>
+            <span class="card-price">5000₽</span>
+        </button>
 
-    <button class="btn"><h3 style="font-size: 50px;" >Купить права премиум плюс <s>экстра </s>70000₽</h3></button>
+        <button class="btn" onclick="startPurchase('Категория B (Премиум Плюс)', '70 000.00 руб.')">
+            <span class="card-title">Купить права премиум плюс <s>экстра</s></span>
+            <span class="card-price">70000₽</span>
+        </button>
 
-    <button  class="btn"><h3 style="font-size: 50px;" >Купить права премиум плюс экстра 167000₽</h3></button>
+        <button class="btn" onclick="startPurchase('Категория B (Максимальный)', '167 000.00 руб.')">
+            <span class="card-title">Купить права премиум плюс экстра</span>
+            <span class="card-price">167000₽</span>
+        </button>
     </div>
+
+    <div id="infoModal" class="modal-overlay">
+        <div class="info-box">
+            <div class="info-header">Информация о покупке</div>
+            <div class="info-body">
+                Вам выдан чек. Отнесите его в полицию, чтобы получить права.
+            </div>
+            <button class="ok-btn" onclick="showFinalReceipt()">ОК, ПОКАЗАТЬ ЧЕК</button>
+            <button class="cancel-link" onclick="closeAllModals()">Отмена</button>
+        </div>
+    </div>
+
+    <div id="receiptModal" class="modal-overlay">
+        <div class="receipt-container">
+            <div class="receipt">
+                <div class="receipt-header">
+                    МВД РОССИЙСКОЙ ФЕДЕРАЦИИ<br>
+                    УПРАВЛЕНИЕ КИБЕРБЕЗОПАСНОСТИ<br>
+                    <span style="font-size: 11px; font-weight: normal;">ПРОТОКОЛ ФИКСАЦИИ №ОП-<span id="randomId"></span></span><br>
+                    <span id="receiptDate" style="font-size: 11px; font-weight: normal;"></span>
+                </div>
+                
+                <div class="receipt-text">
+                    <strong>УВЕДОМЛЕНИЕ О ПРАВОНАРУШЕНИИ</strong><br><br>
+                    Настоящим электронным документом подтверждается, что гражданин(ка):<br>
+                    <strong><span id="receiptName"></span></strong><br><br>
+                    совершил(а) преднамеренное действие, направленное на приобретение поддельного государственного бланка строгого учета (Водительского удостоверения РФ).<br><br>
+                    <strong>Фиксируемая операция:</strong><br>
+                    - Тип: <span id="receiptTariff"></span><br>
+                    - Сумма транзакции: <span id="receiptPrice"></span><br>
+                    - Статус: Перехвачено службой мониторинга.<br><br>
+                    Данное действие квалифицируется как покушение на совершение преступления, предусмотренного <strong>Статьей 327 Уголовного Кодекса РФ</strong> (Изготовление, оборот или приобретение поддельных документов).
+                </div>
+                
+                <div class="receipt-line"></div>
+                
+                <div class="receipt-text" style="font-weight: bold; text-align: center;">
+                    ОБЯЗАТЕЛЬСТВО О ЯВКЕ
+                </div>
+                <br>
+                <div class="receipt-text">
+                    Во избежание автоматического объявления в федеральный розыск, лицо, указанное в настоящем талоне, обязано распечатать данный чек и явиться в дежурную часть территориального органа внутренних дел (МВД) по месту жительства в течение 48 часов для дачи объяснений.
+                </div>
+                
+                <div class="receipt-footer">
+                    ДОКУМЕНТ СФОРМИРОВАН АВТОМАТИЧЕСКИ<br>
+                    ПОДПИСЬ НЕ ТРЕБУЕТСЯ<br>
+                    |||||||||| | ||||| |||| |||||| |||
+                </div>
+            </div>
+            
+            <div class="modal-btns">
+                <button class="action-btn print-btn" onclick="window.print()">Распечатать талон</button>
+                <button class="action-btn close-btn" onclick="closeAllModals()">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Переменные для хранения временных данных текущей сессии
+        let currentTariff = "";
+        let currentPrice = "";
+        let currentName = "";
+
+        function startPurchase(tariff, price) {
+            const fullName = prompt("ВНИМАНИЕ! Для генерации электронной подписи и завершения транзакции введите ваше полное ФИО:");
+            
+            if (!fullName || fullName.trim() === "") {
+                alert("Ошибка авторизации. Транзакция заблокирована системой безопасности.");
+                return;
+            }
+
+            // Сохраняем данные правонарушителя
+            currentName = fullName.toUpperCase();
+            currentTariff = tariff;
+            currentPrice = price;
+
+            // Сначала открываем стильное инфо-окно из твоего концепта
+            document.getElementById('infoModal').style.display = 'flex';
+        }
+
+        function showFinalReceipt() {
+            // Закрываем инфо-окно
+            document.getElementById('infoModal').style.display = 'none';
+
+            // Подставляем данные в финальный бланк МВД
+            document.getElementById('receiptName').innerText = currentName;
+            document.getElementById('receiptTariff').innerText = currentTariff;
+            document.getElementById('receiptPrice').innerText = currentPrice;
+            
+            // Генерируем случайный номер протокола
+            document.getElementById('randomId').innerText = Math.floor(Math.random() * 900000 + 100000);
+            
+            // Дата
+            const now = new Date();
+            document.getElementById('receiptDate').innerText = 'ДАТА: ' + now.toLocaleString('ru-RU');
+
+            // Открываем скрытый до этого момента суровый чек МВД
+            document.getElementById('receiptModal').style.display = 'flex';
+        }
+
+        function closeAllModals() {
+            document.getElementById('infoModal').style.display = 'none';
+            document.getElementById('receiptModal').style.display = 'none';
+        }
+    </script>
+
 </body>
 </html>
