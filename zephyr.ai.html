@@ -390,6 +390,7 @@
     </div>
 
     <script>
+        const DEFAULT_SYSTEM_PROMPT = "Ты — Zephyr.AI, продвинутый ИИ-ассистент. Отвечай всегда только на русском языке.";
         // === ВСТАВЬ СВОЙ КЛЮЧ СЮДА ===
         const ENCODED_KEY = "QUl6YVN5Qlg2WEdoYmdIMEt6S3ZUV1dfZ1k5OVo3cU9nZV9fRER3";
         
@@ -497,7 +498,7 @@
             });
         }
 
-        async function sendMessage() {
+       async function sendMessage() {
             if (!API_KEY || API_KEY === "СЮДА_ВСТАВЬ_СВОЙ_API_КЛЮЧ") {
                 alert('Пожалуйста, откройте ваш HTML-файл в текстовом редакторе и укажите ваш API-ключ в переменной API_KEY на строке 233.');
                 return;
@@ -536,8 +537,14 @@
             chatWindow.appendChild(aiMsgDiv);
             chatWindow.scrollTop = chatWindow.scrollHeight;
 
-            const sysPrompt = localStorage.getItem('zephyr_system_prompt');
-            const requestBody = { contents: chatHistory };
+            // ЗДЕСЬ ИЗМЕНЕНО: берём кастомный промпт из памяти, а если он пустой — подставляем DEFAULT_SYSTEM_PROMPT
+// Берём то, что написал юзер в настройках
+const userCustomPrompt = localStorage.getItem('zephyr_system_prompt')?.trim();
+
+// Если юзер что-то написал, добавляем его текст к дефолтному с новой строки. Если пусто — оставляем только дефолтный.
+const sysPrompt = userCustomPrompt ? `${DEFAULT_SYSTEM_PROMPT}\n${userCustomPrompt}` : DEFAULT_SYSTEM_PROMPT;
+
+const requestBody = { contents: chatHistory };
             
             if (sysPrompt) {
                 requestBody.systemInstruction = { parts: [{ text: sysPrompt }] };
