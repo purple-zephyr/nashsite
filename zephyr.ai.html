@@ -291,6 +291,72 @@
         }
         .send-btn:hover:not(:disabled) { background: #d2d2d7; }
         .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+
+
+
+        /* ======================================================== */
+        /* АДАПТИВ СТИЛИ ДЛЯ МОБИЛЬНЫХ ТЕЛЕФОНОВ (Экраны до 600px) */
+        /* ======================================================== */
+        @media (max-width: 600px) {
+            body {
+                padding: 0; /* Убираем внешние отступы, приложение на весь экран */
+            }
+
+            .chat-wrapper {
+                height: 100vh;
+                height: 100dvh; /* Подстраивается под системные панели мобильных */
+                gap: 0;
+            }
+
+            .chat-container {
+                border-radius: 0; /* Убираем скругления контейнера на весь экран */
+                border: none;
+            }
+
+            .chat-header {
+                padding: 12px 16px;
+                font-size: 1em;
+            }
+
+            .settings-panel.open {
+                top: 47px; /* Сдвиг панели настроек под уменьшенную шапку */
+            }
+
+            #chat-window {
+                padding: 16px;
+                gap: 12px;
+            }
+
+            .msg {
+                max-width: 85%; /* На узком экране даем пузырям больше ширины */
+                font-size: 14px;
+                padding: 10px 14px;
+                border-radius: 16px;
+            }
+            .user-msg { border-radius: 16px 16px 4px 16px; }
+            .ai-msg { border-radius: 16px 16px 16px 4px; }
+
+            .input-container {
+                border-radius: 0; /* Контейнер ввода прижимается к низу экрана */
+                padding: 10px 12px;
+            }
+
+            textarea {
+                border-radius: 12px;
+                padding: 10px 12px;
+                font-size: 14px;
+                height: 38px;
+            }
+
+            .send-btn {
+                border-radius: 12px;
+                padding: 0 14px;
+                height: 38px;
+                font-size: 13px;
+                margin-left: 8px;
+            }
+        }
     </style>
 </head>
 <body>
