@@ -1,0 +1,2289 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zephyr learn — учи HTML & CSS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── RESET & BASE ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0e0f11;
+  --bg2: #16181c;
+  --bg3: #1e2026;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #f0f0ee;
+  --muted: #8a8d96;
+  --muted2: #555860;
+  --accent: #9900f1;
+  --accent-dim: rgba(74,222,128,0.12);
+  --accent-border: rgba(74,222,128,0.3);
+  --orange: #fb923c;
+  --orange-dim: rgba(251,146,60,0.12);
+  --blue: #60a5fa;
+  --blue-dim: rgba(96,165,250,0.12);
+  --red: #f87171;
+  --red-dim: rgba(248,113,113,0.12);
+  --yellow: #fbbf24;
+  --yellow-dim: rgba(251,191,36,0.1);
+  --radius: 10px;
+  --radius-lg: 14px;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Onest', sans-serif;
+}
+html { font-family: var(--sans); background: var(--bg); color: var(--text); line-height: 1.6; }
+body { min-height: 100vh; }
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+
+/* ─── LAYOUT ─── */
+#app { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+
+/* ─── SIDEBAR ─── */
+#sidebar {
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.logo {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-icon {
+  width: 32px; height: 32px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.logo-text { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+.logo-sub { font-size: 10px; color: var(--muted); font-weight: 400; }
+
+.sidebar-xp {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.xp-bar-wrap { flex: 1; height: 5px; background: var(--bg3); border-radius: 99px; overflow: hidden; }
+.xp-bar { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.5s ease; }
+.xp-num { font-size: 12px; font-weight: 600; color: var(--accent); }
+
+.sidebar-courses { padding: 10px 10px; flex: 1; }
+.sidebar-section-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted2);
+  padding: 6px 10px 4px;
+}
+.course-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s;
+  border: 1px solid transparent;
+}
+.course-item:hover { background: var(--bg3); }
+.course-item.active { background: var(--accent-dim); border-color: var(--accent-border); }
+.course-icon { font-size: 18px; flex-shrink: 0; }
+.course-info { flex: 1; min-width: 0; }
+.course-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.course-meta { font-size: 11px; color: var(--muted); }
+.course-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.course-badge.locked { background: var(--bg3); color: var(--muted); }
+.topic-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px 6px 28px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.topic-item:hover { color: var(--text); background: var(--bg3); }
+.topic-item.active { color: var(--accent); }
+.topic-item.done { color: var(--muted); }
+.topic-item .t-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--muted2);
+  transition: background 0.15s;
+}
+.topic-item.done .t-dot { background: var(--accent); }
+.topic-item.active .t-dot { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+
+/* ─── MAIN ─── */
+#main { padding: 32px 40px; max-width: 780px; }
+
+/* ─── SCREEN: HOME ─── */
+.home-hero { margin-bottom: 32px; }
+.home-hero h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.2; margin-bottom: 8px; }
+.home-hero p { font-size: 15px; color: var(--muted); }
+
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 32px; }
+.stat-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+.stat-label { font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.stat-val { font-size: 24px; font-weight: 700; }
+.stat-val.green { color: var(--accent); }
+.stat-val.orange { color: var(--orange); }
+.stat-val.blue { color: var(--blue); }
+
+.continue-card {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  margin-bottom: 24px;
+}
+.continue-card:hover { border-color: var(--accent); }
+.continue-emoji { font-size: 32px; }
+.continue-info h3 { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
+.continue-info p { font-size: 13px; color: var(--muted); }
+.continue-btn {
+  margin-left: auto;
+  background: var(--accent);
+  color: #0e0f11;
+  border: none;
+  border-radius: var(--radius);
+  padding: 9px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--sans);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+.continue-btn:hover { opacity: 0.85; }
+
+.courses-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.course-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.course-card:hover { border-color: var(--border2); background: var(--bg3); }
+.course-card-icon { font-size: 24px; margin-bottom: 10px; }
+.course-card-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.course-card-desc { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+.mini-progress { height: 4px; background: var(--bg3); border-radius: 99px; overflow: hidden; }
+.mini-progress-bar { height: 100%; background: var(--accent); border-radius: 99px; }
+.course-card-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--muted); }
+
+/* ─── SCREEN: LESSON ─── */
+.lesson-wrap { animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+.lesson-topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.back-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: var(--radius);
+  padding: 6px 14px;
+  font-size: 12px;
+  font-family: var(--sans);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.back-btn:hover { border-color: var(--border2); color: var(--text); }
+.lesson-progress { flex: 1; height: 6px; background: var(--bg3); border-radius: 99px; overflow: hidden; }
+.lesson-progress-bar { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.3s ease; }
+.lesson-xp-live { font-size: 12px; font-weight: 600; color: var(--accent); }
+
+/* ─── THEORY SCREEN ─── */
+.theory-header { margin-bottom: 24px; }
+.theory-course-tag {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--orange);
+  background: var(--orange-dim);
+  border-radius: 99px;
+  padding: 3px 10px;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+.theory-title { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 6px; }
+.theory-subtitle { font-size: 14px; color: var(--muted); }
+
+.theory-body { font-size: 15px; color: var(--text); line-height: 1.75; }
+.theory-body h3 { font-size: 16px; font-weight: 600; margin: 20px 0 8px; color: var(--text); }
+.theory-body p { margin-bottom: 12px; }
+.theory-body ul { padding-left: 18px; margin-bottom: 12px; }
+.theory-body ul li { margin-bottom: 4px; }
+.theory-body .note {
+  background: var(--blue-dim);
+  border-left: 3px solid var(--blue);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--blue);
+  margin: 16px 0;
+}
+.theory-body .warn {
+  background: var(--yellow-dim);
+  border-left: 3px solid var(--yellow);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--yellow);
+  margin: 16px 0;
+}
+
+.code-block {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.65;
+  margin: 12px 0 16px;
+  overflow-x: auto;
+  color: #e2e8f0;
+}
+.code-block .tag { color: #f472b6; }
+.code-block .attr { color: #60a5fa; }
+.code-block .val { color: #4ade80; }
+.code-block .comment { color: #6b7280; }
+.code-block .prop { color: #a78bfa; }
+.code-block .num { color: #fb923c; }
+
+.theory-nav {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.btn-primary {
+  background: var(--accent);
+  color: #0e0f11;
+  border: none;
+  border-radius: var(--radius);
+  padding: 11px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--sans);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn-primary:hover { opacity: 0.85; }
+.btn-secondary {
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--text);
+  border-radius: var(--radius);
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--sans);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-secondary:hover { background: var(--bg3); }
+
+/* ─── QUIZ ─── */
+.quiz-tag {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--blue);
+  background: var(--blue-dim); border-radius: 99px;
+  padding: 3px 10px; display: inline-block; margin-bottom: 10px;
+}
+.quiz-q { font-size: 18px; font-weight: 600; margin-bottom: 6px; letter-spacing: -0.2px; }
+.quiz-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+
+/* Multiple choice */
+.choices { display: flex; flex-direction: column; gap: 10px; }
+.choice-btn {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 13px 16px;
+  font-size: 14px;
+  font-family: var(--sans);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.choice-btn:hover:not(:disabled) { background: var(--bg3); border-color: var(--border2); }
+.choice-btn.correct { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+.choice-btn.wrong { background: var(--red-dim); border-color: var(--red); color: var(--red); }
+.choice-letter {
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  background: var(--bg3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+  flex-shrink: 0;
+  color: var(--muted);
+}
+.choice-btn.correct .choice-letter { background: var(--accent); color: #0e0f11; }
+.choice-btn.wrong .choice-letter { background: var(--red); color: #fff; }
+
+/* Code quiz */
+.code-quiz-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 0; }
+.pane-head { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.dot-g { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.dot-b { width: 7px; height: 7px; border-radius: 50%; background: var(--blue); }
+textarea.code-editor {
+  width: 100%;
+  height: 160px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+  padding: 10px 12px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+}
+textarea.code-editor:focus { border-color: var(--accent); }
+.preview-frame {
+  height: 160px;
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.preview-frame iframe { width: 100%; height: 100%; border: none; }
+
+/* Fill-in-the-blank */
+.fill-line { font-size: 15px; font-family: var(--mono); background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px; line-height: 1.8; }
+.fill-input {
+  background: none;
+  border: none;
+  border-bottom: 2px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 15px;
+  width: 120px;
+  outline: none;
+  padding: 0 4px;
+  text-align: center;
+}
+
+/* Feedback bar */
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  display: none;
+  gap: 10px;
+  align-items: flex-start;
+}
+.quiz-feedback.show { display: flex; }
+.quiz-feedback.ok { background: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); }
+.quiz-feedback.fail { background: var(--red-dim); border: 1px solid rgba(248,113,113,0.3); color: var(--red); }
+.quiz-feedback .fb-icon { font-size: 16px; flex-shrink: 0; }
+.quiz-feedback .fb-msg { flex: 1; }
+.quiz-feedback .fb-msg strong { display: block; margin-bottom: 2px; }
+
+.quiz-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+.btn-check {
+  background: var(--accent);
+  color: #0e0f11;
+  border: none;
+  border-radius: var(--radius);
+  padding: 10px 22px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--sans);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn-check:hover { opacity: 0.85; }
+.btn-check:disabled { opacity: 0.4; cursor: default; }
+
+/* ─── COMPLETION ─── */
+.complete-wrap { text-align: center; padding: 40px 20px; animation: fadeIn 0.3s ease; }
+.complete-icon { font-size: 56px; margin-bottom: 16px; }
+.complete-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.complete-sub { font-size: 15px; color: var(--muted); margin-bottom: 28px; }
+.xp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+  border-radius: 99px;
+  padding: 8px 20px;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 28px;
+}
+.complete-btns { display: flex; gap: 10px; justify-content: center; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sidebar">
+    <div class="logo">
+      <div class="logo-icon">🏷</div>
+      <div>
+        <div class="logo-text">Zephyr learn</div>
+        <div class="logo-sub">HTML & CSS курсы</div>
+      </div>
+    </div>
+    <div class="sidebar-xp">
+      <div class="xp-bar-wrap"><div class="xp-bar" id="sb-xp-bar" style="width:0%"></div></div>
+      <div class="xp-num" id="sb-xp">0 XP</div>
+    </div>
+    <div class="sidebar-courses" id="sidebar-courses"></div>
+  </div>
+  <div id="main"></div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════
+   ДАННЫЕ КУРСОВ — добавляй новые курсы здесь!
+   
+   Структура:
+   {
+     id: уникальный id,
+     icon: эмодзи,
+     name: название,
+     description: описание,
+     topics: [
+       {
+         id: уникальный id,
+         name: название темы,
+         theory: {
+           title, subtitle, html  ← html-строка с теорией
+         },
+         quiz: [
+           Типы вопросов:
+           
+           1) { type: 'choice', q, choices: ['A','B','C','D'], correct: 0 }
+              correct — индекс правильного ответа
+           
+           2) { type: 'code', q, starter, check: (code) => boolean, hint }
+              check — функция-валидатор
+           
+           3) { type: 'fill', q, line: 'код с ___ вместо пропуска', answer: 'слово', hint }
+         ]
+       }
+     ]
+   }
+══════════════════════════════════════════════════ */
+const COURSES = [
+  {
+    id: 'html-basics',
+    icon: '🧱',
+    name: 'HTML: Основы',
+    description: 'Теги, структура, атрибуты',
+    topics: [
+      {
+        id: 'what-is-html',
+        name: 'Что такое HTML',
+        theory: {
+          title: 'Что такое HTML?',
+          subtitle: 'Строительные блоки любой веб-страницы',
+          html: `
+            <p>HTML (HyperText Markup Language) — это язык разметки, который описывает структуру страницы. Браузер читает HTML и показывает его как страницу.</p>
+            <div class="note">💡 HTML — не язык программирования. Он не считает и не принимает решений. Он просто говорит: «здесь заголовок», «здесь абзац», «здесь картинка».</div>
+            <h3>Как устроен тег?</h3>
+            <p>HTML состоит из <strong>тегов</strong>. Большинство тегов идут парой — открывающий и закрывающий:</p>
+            <div class="code-block"><span class="tag">&lt;h1&gt;</span>Это заголовок<span class="tag">&lt;/h1&gt;</span>
+<span class="tag">&lt;p&gt;</span>Это абзац текста<span class="tag">&lt;/p&gt;</span></div>
+            <h3>Базовые теги</h3>
+            <ul>
+              <li><code>&lt;h1&gt; ... &lt;h6&gt;</code> — заголовки (h1 самый крупный)</li>
+              <li><code>&lt;p&gt;</code> — абзац</li>
+              <li><code>&lt;br&gt;</code> — перенос строки (одиночный тег)</li>
+              <li><code>&lt;strong&gt;</code> — <strong>жирный</strong> текст</li>
+              <li><code>&lt;em&gt;</code> — <em>курсив</em></li>
+            </ul>
+            <h3>Скелет страницы</h3>
+            <div class="code-block"><span class="tag">&lt;!DOCTYPE html&gt;</span>
+<span class="tag">&lt;html&gt;</span>
+  <span class="tag">&lt;head&gt;</span>
+    <span class="tag">&lt;title&gt;</span>Название вкладки<span class="tag">&lt;/title&gt;</span>
+  <span class="tag">&lt;/head&gt;</span>
+  <span class="tag">&lt;body&gt;</span>
+    <span class="comment">&lt;!-- Весь видимый контент здесь --&gt;</span>
+    <span class="tag">&lt;h1&gt;</span>Привет, мир!<span class="tag">&lt;/h1&gt;</span>
+  <span class="tag">&lt;/body&gt;</span>
+<span class="tag">&lt;/html&gt;</span></div>
+            <div class="warn">⚠️ Всегда закрывай теги! Незакрытый тег может сломать разметку всей страницы.</div>
+          `
+        },
+        quiz: [
+          {
+            type: 'choice',
+            q: 'Что означает аббревиатура HTML?',
+            choices: [
+              'HyperText Markup Language',
+              'High Tech Modern Layout',
+              'Home Tool Markup Language',
+              'Hyper Transfer Method Link'
+            ],
+            correct: 0,
+            explain: 'HTML расшифровывается как HyperText Markup Language — язык гипертекстовой разметки.'
+          },
+          {
+            type: 'choice',
+            q: 'Какой тег создаёт самый крупный заголовок?',
+            choices: ['&lt;header&gt;', '&lt;h6&gt;', '&lt;h1&gt;', '&lt;big&gt;'],
+            correct: 2,
+            explain: 'Тег &lt;h1&gt; — самый крупный заголовок. Заголовки идут от h1 (большой) до h6 (мелкий).'
+          },
+          {
+            type: 'fill',
+            q: 'Заполни пропуск: закрывающий тег всегда начинается с символа ___',
+            line: '&lt;<span id="fill-slot"><input class="fill-input" id="fill-ans" placeholder="?"></span>h1&gt;',
+            answer: '/',
+            hint: 'Посмотри на пример: &lt;/h1&gt; — слэш идёт сразу после &lt;',
+            explain: 'Закрывающий тег начинается с &lt;/ (слэш). Например: &lt;/p&gt;, &lt;/h1&gt;, &lt;/div&gt;.'
+          },
+          {
+            type: 'code',
+            q: 'Напиши заголовок h2 с текстом «Мой сайт» и абзац с любым текстом.',
+            starter: '',
+            check: (c) => /<h2[^>]*>[^<]*Мой сайт[^<]*<\/h2>/i.test(c) && /<p[^>]*>.+<\/p>/i.test(c),
+            hint: 'Используй &lt;h2&gt;Мой сайт&lt;/h2&gt; и &lt;p&gt;Текст&lt;/p&gt;',
+            explain: 'Отлично! h2 — заголовок второго уровня, чуть меньше h1. Используется для подразделов.'
+          }
+        ]
+      },
+      {
+        id: 'attributes',
+        name: 'Атрибуты и ссылки',
+        theory: {
+          title: 'Атрибуты тегов',
+          subtitle: 'Дополнительная информация для тегов',
+          html: `
+            <p>Атрибуты — это дополнительные настройки тегов. Они пишутся внутри открывающего тега:</p>
+            <div class="code-block"><span class="tag">&lt;тег</span> <span class="attr">атрибут</span>=<span class="val">"значение"</span><span class="tag">&gt;</span></div>
+            <h3>Тег &lt;a&gt; — ссылка</h3>
+            <p>Самый важный тег интернета! Атрибут <code>href</code> задаёт адрес:</p>
+            <div class="code-block"><span class="tag">&lt;a</span> <span class="attr">href</span>=<span class="val">"https://google.com"</span><span class="tag">&gt;</span>Перейти в Google<span class="tag">&lt;/a&gt;</span>
+
+<span class="comment">&lt;!-- Открыть в новой вкладке: --&gt;</span>
+<span class="tag">&lt;a</span> <span class="attr">href</span>=<span class="val">"https://google.com"</span> <span class="attr">target</span>=<span class="val">"_blank"</span><span class="tag">&gt;</span>Google<span class="tag">&lt;/a&gt;</span></div>
+            <h3>Тег &lt;img&gt; — картинка</h3>
+            <p>Одиночный тег (не нужен закрывающий). Атрибут <code>src</code> — путь к картинке, <code>alt</code> — описание:</p>
+            <div class="code-block"><span class="tag">&lt;img</span> <span class="attr">src</span>=<span class="val">"photo.jpg"</span> <span class="attr">alt</span>=<span class="val">"Описание картинки"</span><span class="tag">&gt;</span></div>
+            <div class="note">💡 Атрибут alt важен для доступности — он читается экранными читалками для людей с нарушением зрения.</div>
+            <h3>Атрибут id и class</h3>
+            <div class="code-block"><span class="tag">&lt;p</span> <span class="attr">id</span>=<span class="val">"main-text"</span><span class="tag">&gt;</span>Один уникальный элемент<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;p</span> <span class="attr">class</span>=<span class="val">"highlight"</span><span class="tag">&gt;</span>Много элементов<span class="tag">&lt;/p&gt;</span></div>
+            <p><code>id</code> — уникальный (один на странице). <code>class</code> — можно использовать на многих элементах. Оба нужны для CSS и JavaScript.</p>
+          `
+        },
+        quiz: [
+          {
+            type: 'choice',
+            q: 'Какой атрибут задаёт адрес ссылки?',
+            choices: ['src', 'href', 'link', 'url'],
+            correct: 1,
+            explain: 'Атрибут href (Hypertext Reference) задаёт адрес для тега &lt;a&gt;.'
+          },
+          {
+            type: 'fill',
+            q: 'Заполни атрибут, чтобы ссылка открывалась в новой вкладке:',
+            line: '&lt;a href="..." <input class="fill-input" id="fill-ans" placeholder="?" style="width:90px">&gt;',
+            answer: 'target="_blank"',
+            hint: 'target="_blank" означает "открыть в новом окне"',
+            explain: 'target="_blank" говорит браузеру: открой эту ссылку в новой вкладке.'
+          },
+          {
+            type: 'code',
+            q: 'Создай ссылку на https://wikipedia.org с текстом «Википедия», которая открывается в новой вкладке.',
+            starter: '',
+            check: (c) => /<a[^>]*href\s*=\s*["']https?:\/\/wikipedia\.org["'][^>]*target\s*=\s*["']_blank["'][^>]*>[\s\S]*Википедия[\s\S]*<\/a>/i.test(c) || /<a[^>]*target\s*=\s*["']_blank["'][^>]*href\s*=\s*["']https?:\/\/wikipedia\.org["'][^>]*>[\s\S]*Википедия[\s\S]*<\/a>/i.test(c),
+            hint: '&lt;a href="https://wikipedia.org" target="_blank"&gt;Википедия&lt;/a&gt;',
+            explain: 'Порядок атрибутов не важен — браузер поймёт оба варианта.'
+          }
+        ]
+      }
+    ]
+  },
+
+
+  {
+    id: 'html-forms',
+    icon: '📝',
+    name: 'HTML: Формы',
+    description: 'Инпуты, кнопки и отправка данных',
+    topics: [
+      {
+        id: 'form-basics',
+        name: 'Основы форм',
+        theory: {
+          title: 'Тег &lt;form&gt;',
+          subtitle: 'Как собирать данные от пользователя',
+          html: `
+            <p>Формы нужны для всего: от строки поиска до оформления заказа. Оборачиваем инпуты в тег &lt;form&gt;.</p>
+            <h3>Базовый шаблон</h3>
+            <div class="code-block"><span class="tag">&lt;form</span> <span class="attr">action</span>=<span class="val">"/submit"</span> <span class="attr">method</span>=<span class="val">"POST"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="val">"text"</span> <span class="attr">placeholder</span>=<span class="val">"Ваше имя"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;button</span> <span class="attr">type</span>=<span class="val">"submit"</span><span class="tag">&gt;</span>Отправить<span class="tag">&lt;/button&gt;</span>
+<span class="tag">&lt;/form&gt;</span></div>
+            <h3>Популярные типы инпутов</h3>
+            <div class="code-block"><span class="comment">&lt;!-- Текст и пароль --&gt;</span>
+<span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="val">"text"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="val">"password"</span><span class="tag">&gt;</span> <span class="comment">(скрывает символы)</span>
+
+<span class="comment">&lt;!-- Чекбокс и радио --&gt;</span>
+<span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="val">"checkbox"</span><span class="tag">&gt;</span> Согласен
+<span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="val">"radio"</span> <span class="attr">name</span>=<span class="val">"gender"</span><span class="tag">&gt;</span> Мужской
+
+<span class="comment">&lt;!-- Дата и цвет --&gt;</span>
+<span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="val">"date"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="val">"color"</span><span class="tag">&gt;</span></div>
+            <div class="note">💡 У радиокнопок должно быть одинаковое имя (name), чтобы выбрать можно было только одну.</div>
+            <h3>Placeholder и Label</h3>
+            <p>Placeholder — подсказка внутри поля. Label — подпись сверху или сбоку (кликабельна, improves UX).</p>
+            <div class="code-block"><span class="tag">&lt;label&gt;</span>
+  Email:
+  <span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="val">"email"</span> <span class="attr">placeholder</span>=<span class="val">"you@example.com"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;/label&gt;</span></div>
+          `
+        },
+        quiz: [
+          {
+            type: 'choice',
+            q: 'Какой тег используется для создания выпадающего списка?',
+            choices: ['&lt;input type="list"&gt;', '&lt;select&gt;', '&lt;dropdown&gt;', '&lt;menu&gt;'],
+            correct: 1,
+            explain: '&lt;select&gt; в сочетании с &lt;option&gt; создаёт выпадающий список.'
+          },
+          {
+            type: 'fill',
+            q: 'Заполни тип инпута, который скрывает вводимые символы (звёздочками):',
+            line: '&lt;input type="<input class="fill-input" id="fill-ans" placeholder="?" style="width:80px">"&gt;',
+            answer: 'password',
+            hint: 'Этот тип используется для полей ввода пароля.',
+            explain: 'type="password" заменяет символы на точки или звёздочки для безопасности.'
+          },
+          {
+            type: 'code',
+            q: 'Создай форму с полем для email и кнопкой "Подписаться".',
+            starter: '',
+            check: (c) => /<form[^>]*>/i.test(c) && /type\s*=\s*["']email["']/i.test(c) && /<button[^>]*>Подписаться<\/button>/i.test(c),
+            hint: '&lt;form&gt;&lt;input type="email"&gt;&lt;button&gt;Подписаться&lt;/button&gt;&lt;/form&gt;',
+            explain: 'Браузеры валидируют email-поле: если ввести не email, форму можно не отправить.'
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'html-tables-lists',
+    icon: '📊',
+    name: 'HTML: Таблицы и списки',
+    description: 'Структурируем данные правильно',
+    topics: [
+      {
+        id: 'lists-deep',
+        name: 'Списки',
+        theory: {
+          title: 'Списки в HTML',
+          subtitle: 'Упорядоченные, неупорядоченные и списки определений',
+          html: `
+            <p>Списки — один из самых частых элементов на странице: меню, карточки товаров, рецепты.</p>
+            <h3>Неупорядоченный список &lt;ul&gt;</h3>
+            <div class="code-block"><span class="tag">&lt;ul&gt;</span>
+  <span class="tag">&lt;li&gt;</span>Хлеб<span class="tag">&lt;/li&gt;</span>
+  <span class="tag">&lt;li&gt;</span>Молоко<span class="tag">&lt;/li&gt;</span>
+  <span class="tag">&lt;li&gt;</span>Яйца<span class="tag">&lt;/li&gt;</span>
+<span class="tag">&lt;/ul&gt;</span></div>
+            <p>По умолчанию маркеры — точки. Их можно менять через CSS.</p>
+            <h3>Упорядоченный список &lt;ol&gt;</h3>
+            <div class="code-block"><span class="tag">&lt;ol&gt;</span>
+  <span class="tag">&lt;li&gt;</span>Проснуться<span class="tag">&lt;/li&gt;</span>
+  <span class="tag">&lt;li&gt;</span>Умыться<span class="tag">&lt;/li&gt;</span>
+  <span class="tag">&lt;li&gt;</span>Позавтракать<span class="tag">&lt;/li&gt;</span>
+<span class="tag">&lt;/ol&gt;</span></div>
+            <p>По умолчанию нумерация: 1, 2, 3... Атрибут <code>start</code> меняет начало.</p>
+            <div class="note">💡 Можно вкладывать списки друг в друга — например, ul внутри li. Получается древовидная структура.</div>
+            <h3>Меняем маркеры через CSS</h3>
+            <div class="code-block"><span class="prop">list-style-type</span>: <span class="val">circle</span>;    <span class="comment">/* кружок */</span>
+<span class="prop">list-style-type</span>: <span class="val">square</span>;    <span class="comment">/* квадрат */</span>
+<span class="prop">list-style-type</span>: <span class="val">none</span>;      <span class="comment">/* убрать маркеры */</span>
+<span class="prop">list-style-type</span>: <span class="val">lower-roman</span>; <span class="comment">/* i, ii, iii */</span></div>
+            <div class="warn">⚠️ Не используй списки только для отступов. Для отступов есть padding/margin. Списки — для семантики.</div>
+          `
+        },
+        quiz: [
+          {
+            type: 'choice',
+            q: 'Какой тег создаёт пункт списка?',
+            choices: ['&lt;item&gt;', '&lt;point&gt;', '&lt;li&gt;', '&lt;list&gt;'],
+            correct: 2,
+            explain: '&lt;li&gt; (list item) — единственный правильный дочерний элемент для &lt;ul&gt; и &lt;ol&gt;.'
+          },
+          {
+            type: 'fill',
+            q: 'Какое CSS-свойство убирает маркеры у списка?',
+            line: 'ul { <input class="fill-input" id="fill-ans" placeholder="?" style="width:140px">; }',
+            answer: 'list-style-type: none',
+            hint: 'Это свойство отвечает за вид маркеров, а значение none их скрывает.',
+            explain: 'list-style-type: none — убирает маркеры. Часто используют для навигационных меню.'
+          },
+          {
+            type: 'code',
+            q: 'Создай упорядоченный список из трёх шагов рецепта (любых).',
+            starter: '',
+            check: (c) => /<ol[^>]*>/i.test(c) && (c.match(/<li>/gi)||[]).length >= 3,
+            hint: '&lt;ol&gt;&lt;li&gt;Шаг 1&lt;/li&gt;&lt;li&gt;Шаг 2&lt;/li&gt;&lt;li&gt;Шаг 3&lt;/li&gt;&lt;/ol&gt;',
+            explain: 'Упорядоченный список используется для последовательностей — шаги, рейтинги, инструкции.'
+          }
+        ]
+      },
+      {
+        id: 'tables',
+        name: 'Таблицы',
+        theory: {
+          title: 'HTML-таблицы',
+          subtitle: 'Строки, ячейки и заголовки',
+          html: `
+            <p>Таблицы — для отображения табличных данных (не для вёрстки!).</p>
+            <div class="code-block"><span class="tag">&lt;table&gt;</span>
+  <span class="tag">&lt;tr&gt;</span>  <span class="comment">&lt;!-- строка --&gt;</span>
+    <span class="tag">&lt;th&gt;</span>Имя<span class="tag">&lt;/th&gt;</span>  <span class="comment">&lt;!-- заголовок --&gt;</span>
+    <span class="tag">&lt;th&gt;</span>Возраст<span class="tag">&lt;/th&gt;</span>
+  <span class="tag">&lt;/tr&gt;</span>
+  <span class="tag">&lt;tr&gt;</span>
+    <span class="tag">&lt;td&gt;</span>Анна<span class="tag">&lt;/td&gt;</span>  <span class="comment">&lt;!-- ячейка --&gt;</span>
+    <span class="tag">&lt;td&gt;</span>25<span class="tag">&lt;/td&gt;</span>
+  <span class="tag">&lt;/tr&gt;</span>
+<span class="tag">&lt;/table&gt;</span></div>
+            <h3>Объединение ячеек</h3>
+            <p>Атрибут <code>colspan</code> растягивает ячейку на несколько колонок. <code>rowspan</code> — на несколько строк.</p>
+            <div class="code-block"><span class="tag">&lt;td</span> <span class="attr">colspan</span>=<span class="val">"2"</span><span class="tag">&gt;</span>Занимает 2 колонки<span class="tag">&lt;/td&gt;</span>
+<span class="tag">&lt;td</span> <span class="attr">rowspan</span>=<span class="val">"3"</span><span class="tag">&gt;</span>Занимает 3 строки<span class="tag">&lt;/td&gt;</span></div>
+            <h3>Секции таблицы</h3>
+            <p>Для больших таблиц:</p>
+            <div class="code-block"><span class="tag">&lt;table&gt;</span>
+  <span class="tag">&lt;thead&gt;</span> ... заголовки ... <span class="tag">&lt;/thead&gt;</span>
+  <span class="tag">&lt;tbody&gt;</span> ... данные ... <span class="tag">&lt;/tbody&gt;</span>
+  <span class="tag">&lt;tfoot&gt;</span> ... итоги ... <span class="tag">&lt;/tfoot&gt;</span>
+<span class="tag">&lt;/table&gt;</span></div>
+            <div class="note">💡 thead, tbody, tfoot помогают браузеру печатать заголовки на каждой странице и упрощают стилизацию.</div>
+          `
+        },
+        quiz: [
+          {
+            type: 'choice',
+            q: 'Какой тег создаёт обычную ячейку таблицы?',
+            choices: ['&lt;td&gt;', '&lt;th&gt;', '&lt;tr&gt;', '&lt;cell&gt;'],
+            correct: 0,
+            explain: '&lt;td&gt; (table data) — обычная ячейка. &lt;th&gt; — заголовочная (жирный текст по центру).'
+          },
+          {
+            type: 'fill',
+            q: 'Заполни атрибут, чтобы ячейка растянулась на 3 колонки:',
+            line: '&lt;td <input class="fill-input" id="fill-ans" placeholder="?" style="width:100px">&gt;',
+            answer: 'colspan="3"',
+            hint: 'colspan = column span (охват колонок).',
+            explain: 'colspan="3" заставит ячейку занять место трёх обычных ячеек в строке.'
+          },
+          {
+            type: 'code',
+            q: 'Создай таблицу 2x2 с заголовками "Товар" и "Цена" и одной строкой данных.',
+            starter: '',
+            check: (c) => /<table[^>]*>/i.test(c) && /<th[^>]*>Товар<\/th>/i.test(c) && /<th[^>]*>Цена<\/th>/i.test(c) && /<td[^>]*>.+<\/td>/i.test(c),
+            hint: '&lt;table&gt;&lt;tr&gt;&lt;th&gt;Товар&lt;/th&gt;&lt;th&gt;Цена&lt;/th&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Хлеб&lt;/td&gt;&lt;td&gt;50₽&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;',
+            explain: 'Отлично! Для красоты можно добавить border="1" или стилизовать через CSS.'
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'html-semantic-media',
+    icon: '🏗️',
+    name: 'HTML: Семантика и медиа',
+    description: 'Смысловые теги, видео и аудио',
+    topics: [
+      {
+        id: 'semantic-tags',
+        name: 'Семантические теги',
+        theory: {
+          title: 'Семантика HTML5',
+          subtitle: 'Почему div — не всегда лучший выбор',
+          html: `
+            <p>Семантические теги описывают <strong>смысл</strong> контента для браузера, поисковиков и скринридеров.</p>
+            <div class="code-block"><span class="comment">&lt;!-- Вместо &lt;div class="header"&gt; --&gt;</span>
+<span class="tag">&lt;header&gt;</span>Шапка сайта<span class="tag">&lt;/header&gt;</span>
+
+<span class="comment">&lt;!-- Вместо &lt;div class="nav"&gt; --&gt;</span>
+<span class="tag">&lt;nav&gt;</span>Навигация<span class="tag">&lt;/nav&gt;</span>
+
+<span class="comment">&lt;!-- Вместо &lt;div class="main"&gt; --&gt;</span>
+<span class="tag">&lt;main&gt;</span>Основной контент<span class="tag">&lt;/main&gt;</span>
+
+<span class="comment">&lt;!-- Вместо &lt;div class="article"&gt; --&gt;</span>
+<span class="tag">&lt;article&gt;</span>Статья или пост<span class="tag">&lt;/article&gt;</span>
+
+<span class="comment">&lt;!-- Вместо &lt;div class="sidebar"&gt; --&gt;</span>
+<span class="tag">&lt;aside&gt;</span>Боковая панель<span class="tag">&lt;/aside&gt;</span>
+
+<span class="comment">&lt;!-- Вместо &lt;div class="footer"&gt; --&gt;</span>
+<span class="tag">&lt;footer&gt;</span>Подвал<span class="tag">&lt;/footer&gt;</span></div>
+            <h3>Зачем это нужно?</h3>
+            <ul>
+              <li><strong>SEO:</strong> поисковики лучше понимают структуру страницы</li>
+              <li><strong>Доступность:</strong> скринридеры могут перепрыгивать между секциями</li>
+              <li><strong>Читаемость кода:</strong> &lt;nav&gt; понятнее, чем &lt;div class="nav"&gt;</li>
+            </ul>
+            <h3>Теги &lt;figure&gt; и &lt;figcaption&gt;</h3>
+            <div class="code-block"><span class="tag">&lt;figure&gt;</span>
+  <span class="tag">&lt;img</span> <span class="attr">src</span>=<span class="val">"chart.jpg"</span> <span class="attr">alt</span>=<span class="val">"График"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;figcaption&gt;</span>Рис. 1 — Рост продаж<span class="tag">&lt;/figcaption&gt;</span>
+<span class="tag">&lt;/figure&gt;</span></div>
+            <div class="note">💡 main на странице должен быть один. header и footer могут быть и у всей страницы, и внутри article.</div>
+          `
+        },
+        quiz: [
+          {
+            type: 'choice',
+            q: 'Какой тег использовать для блока навигации?',
+            choices: ['&lt;navigation&gt;', '&lt;nav&gt;', '&lt;menu&gt;', '&lt;links&gt;'],
+            correct: 1,
+            explain: '&lt;nav&gt; — специальный семантический тег для навигационных ссылок.'
+          },
+          {
+            type: 'fill',
+            q: 'Заполни тег для боковой панели (сайдбара):',
+            line: '&lt;<input class="fill-input" id="fill-ans" placeholder="?" style="width:70px">&gt;Реклама&lt;/&gt;',
+            answer: 'aside',
+            hint: 'Этот тег используется для контента, косвенно связанного с основным.',
+            explain: '&lt;aside&gt; — для боковых панелей, виджетов, рекламы, дополнительной информации.'
+          },
+          {
+            type: 'code',
+            q: 'Создай структуру: header с заголовком h1, main с параграфом, footer с копирайтом.',
+            starter: '',
+            check: (c) => /<header[^>]*>/i.test(c) && /<main[^>]*>/i.test(c) && /<footer[^>]*>/i.test(c),
+            hint: '&lt;header&gt;&lt;h1&gt;Сайт&lt;/h1&gt;&lt;/header&gt;&lt;main&gt;&lt;p&gt;Контент&lt;/p&gt;&lt;/main&gt;&lt;footer&gt;&lt;p&gt;© 2024&lt;/p&gt;&lt;/footer&gt;',
+            explain: 'Это базовая семантическая структура любой современной веб-страницы.'
+          }
+        ]
+      },
+      {
+        id: 'media-tags',
+        name: 'Видео и аудио',
+        theory: {
+          title: 'Медиа-теги',
+          subtitle: 'Вставляем видео и аудио без сторонних плееров',
+          html: `
+            <p>HTML5 позволяет вставлять медиа напрямую, без Flash и YouTube.</p>
+            <h3>Тег &lt;video&gt;</h3>
+            <div class="code-block"><span class="tag">&lt;video</span> <span class="attr">controls</span> <span class="attr">width</span>=<span class="val">"400"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;source</span> <span class="attr">src</span>=<span class="val">"movie.mp4"</span> <span class="attr">type</span>=<span class="val">"video/mp4"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;source</span> <span class="attr">src</span>=<span class="val">"movie.webm"</span> <span class="attr">type</span>=<span class="val">"video/webm"</span><span class="tag">&gt;</span>
+  Текст, если видео не поддерживается
+<span class="tag">&lt;/video&gt;</span></div>
+            <h3>Полезные атрибуты video</h3>
+            <div class="code-block"><span class="attr">controls</span>       <span class="comment">— показывает панель управления</span>
+<span class="attr">autoplay</span>       <span class="comment">— автовоспроизведение (часто блочат браузеры)</span>
+<span class="attr">muted</span>          <span class="comment">— без звука (разрешает autoplay)</span>
+<span class="attr">loop</span>           <span class="comment">— зациклить</span>
+<span class="attr">poster</span>=<span class="val">"preview.jpg"</span> <span class="comment">— обложка до старта</span></div>
+            <h3>Тег &lt;audio&gt;</h3>
+            <div class="code-block"><span class="tag">&lt;audio</span> <span class="attr">controls</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;source</span> <span class="attr">src</span>=<span class="val">"music.mp3"</span> <span class="attr">type</span>=<span class="val">"audio/mpeg"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;/audio&gt;</span></div>
+            <h3>iframe — вставка с YouTube</h3>
+            <div class="code-block"><span class="tag">&lt;iframe</span> <span class="attr">width</span>=<span class="val">"560"</span> <span class="attr">height</span>=<span class="val">"315"</span> <span class="attr">src</span>=<span class="val">"https://youtube.com/embed/КОД"</span><span class="tag">&gt;&lt;/iframe&gt;</span></div>
+            <div class="warn">⚠️ Несколько &lt;source&gt; — это фолбэк. Браузер возьмёт первый формат, который понимает. Mp4 понимают все современные браузеры.</div>
+          `
+        },
+        quiz: [
+          {
+            type: 'choice',
+            q: 'Какой атрибут добавляет кнопки play/pause к видео?',
+            choices: ['buttons', 'controls', 'player', 'interface'],
+            correct: 1,
+            explain: 'Атрибут controls добавляет стандартную панель управления видео.'
+          },
+          {
+            type: 'fill',
+            q: 'Заполни атрибут для картинки-обложки видео до воспроизведения:',
+            line: '&lt;video <input class="fill-input" id="fill-ans" placeholder="?" style="width:120px">&gt;',
+            answer: 'poster="preview.jpg"',
+            hint: 'Этот атрибут указывает путь к картинке, которая показывается вместо чёрного экрана.',
+            explain: 'poster — отличный способ сделать видео привлекательнее до нажатия Play.'
+          },
+          {
+            type: 'code',
+            q: 'Вставь аудиоплеер с элементом controls и источником song.mp3.',
+            starter: '',
+            check: (c) => /<audio[^>]*controls/i.test(c) && /<source[^>]*src\s*=\s*["']song\.mp3["']/i.test(c),
+            hint: '&lt;audio controls&gt;&lt;source src="song.mp3" type="audio/mpeg"&gt;&lt;/audio&gt;',
+            explain: 'type="audio/mpeg" помогает браузеру быстро определить формат, не скачивая файл.'
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'html-meta-seo',
+    icon: '🔍',
+    name: 'HTML: Meta и SEO',
+    description: 'Теги в head, Open Graph и поисковики',
+    topics: [
+      {
+        id: 'meta-tags',
+        name: 'Meta-теги',
+        theory: {
+          title: 'Meta-теги и &lt;head&gt;',
+          subtitle: 'Всё, что не видно, но работает',
+          html: `
+            <p>Meta-теги живут в &lt;head&gt; и описывают страницу для браузера, поисковиков и соцсетей.</p>
+            <h3>Обязательный минимум</h3>
+            <div class="code-block"><span class="tag">&lt;meta</span> <span class="attr">charset</span>=<span class="val">"UTF-8"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="val">"viewport"</span> <span class="attr">content</span>=<span class="val">"width=device-width, initial-scale=1.0"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="val">"description"</span> <span class="attr">content</span>=<span class="val">"Описание страницы (сниппет в поиске)"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="val">"theme-color"</span> <span class="attr">content</span>=<span class="val">"#0e0f11"</span><span class="tag">&gt;</span></div>
+            <h3>Open Graph (соцсети)</h3>
+            <p>Эти теги говорят соцсетям, как выглядит превьюшка ссылки.</p>
+            <div class="code-block"><span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"og:title"</span> <span class="attr">content</span>=<span class="val">"Мой сайт"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"og:description"</span> <span class="attr">content</span>=<span class="val">"Лучший сайт по HTML"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"og:image"</span> <span class="attr">content</span>=<span class="val">"https://mysite.com/preview.jpg"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"og:url"</span> <span class="attr">content</span>=<span class="val">"https://mysite.com"</span><span class="tag">&gt;</span></div>
+            <h3>Twitter Cards</h3>
+            <div class="code-block"><span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="val">"twitter:card"</span> <span class="attr">content</span>=<span class="val">"summary_large_image"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="val">"twitter:title"</span> <span class="attr">content</span>=<span class="val">"Мой сайт"</span><span class="tag">&gt;</span></div>
+            <h3>Другие полезные meta</h3>
+            <div class="code-block"><span class="comment">&lt;!-- Запрет индексации (осторожно!) --&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="val">"robots"</span> <span class="attr">content</span>=<span class="val">"noindex, nofollow"</span><span class="tag">&gt;</span>
+
+<span class="comment">&lt;!-- Иконка сайта --&gt;</span>
+<span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="val">"icon"</span> <span class="attr">href</span>=<span class="val">"favicon.ico"</span> <span class="attr">type</span>=<span class="val">"image/x-icon"</span><span class="tag">&gt;</span>
+
+<span class="comment">&lt;!-- DNS-prefetch для скорости --&gt;</span>
+<span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="val">"dns-prefetch"</span> <span class="attr">href</span>=<span class="val">"https://api.mysite.com"</span><span class="tag">&gt;</span></div>
+            <div class="note">💡 Без meta viewport="width=device-width" мобильный браузер будет показывать десктопную версию, сжав её.</div>
+          `
+        },
+        quiz: [
+          {
+            type: 'choice',
+            q: 'Какой meta-тег обязателен для корректного отображения на мобильных?',
+            choices: [
+              '&lt;meta name="mobile" content="true"&gt;',
+              '&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;',
+              '&lt;meta name="responsive" content="on"&gt;',
+              '&lt;meta name="screen" content="mobile"&gt;'
+            ],
+            correct: 1,
+            explain: 'Без viewport mobile браузер считает ширину экрана ~980px и показывает страницу уменьшенной.'
+          },
+          {
+            type: 'fill',
+            q: 'Заполни meta-тег для описания страницы (description):',
+            line: '&lt;meta name="<input class="fill-input" id="fill-ans" placeholder="?" style="width:80px">" content="Описание"&gt;',
+            answer: 'description',
+            hint: 'Этот тег часто отображается как сниппет под заголовком в результатах поиска.',
+            explain: 'description — один из главных SEO-тегов. Рекомендуемая длина: 150–160 символов.'
+          },
+          {
+            type: 'code',
+            q: 'Напиши секцию head с charset, viewport и Open Graph заголовком "Мой блог".',
+            starter: '<head>\n\n</head>',
+            check: (c) => /charset\s*=\s*["']UTF-8["']/i.test(c) && /viewport/i.test(c) && /og:title/i.test(c) && /Мой блог/i.test(c),
+            hint: '&lt;meta charset="UTF-8"&gt; + &lt;meta name="viewport"...&gt; + &lt;meta property="og:title" content="Мой блог"&gt;',
+            explain: 'Заметь: у og тегов атрибут property, а у обычных meta — name. Это важно для парсеров соцсетей.'
+          }
+        ]
+      },
+      {
+        id: 'structured-data',
+        name: 'Микроразметка',
+        theory: {
+          title: 'Schema.org и JSON-LD',
+          subtitle: 'Как подсказать Google структуру данных',
+          html: `
+            <p>Микроразметка помогает поисковикам понять, что именно на странице: рецепт, товар, статья, человек.</p>
+            <h3>JSON-LD (рекомендуемый формат)</h3>
+            <div class="code-block"><span class="tag">&lt;script</span> <span class="attr">type</span>=<span class="val">"application/ld+json"</span><span class="tag">&gt;</span>
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Как учить HTML",
+  "author": {
+    "@type": "Person",
+    "name": "Иван Иванов"
+  },
+  "datePublished": "2024-01-15"
+}
+<span class="tag">&lt;/script&gt;</span></div>
+            <h3>Другие форматы: Microdata</h3>
+            <div class="code-block"><span class="tag">&lt;div</span> <span class="attr">itemscope</span> <span class="attr">itemtype</span>=<span class="val">"https://schema.org/Product"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;span</span> <span class="attr">itemprop</span>=<span class="val">"name"</span><span class="tag">&gt;</span>Кроссовки<span class="tag">&lt;/span&gt;</span>
+  <span class="tag">&lt;span</span> <span class="attr">itemprop</span>=<span class="val">"price"</span><span class="tag">&gt;</span>5000<span class="tag">&lt;/span&gt;</span>
+<span class="tag">&lt;/div&gt;</span></div>
+            <h3>Популярные типы Schema</h3>
+            <ul>
+              <li><strong>Article</strong> — статьи и новости</li>
+              <li><strong>Product</strong> — товары (цена, наличие, рейтинг)</li>
+              <li><strong>BreadcrumbList</strong> — хлебные крошки</li>
+              <li><strong>FAQ</strong> — вопросы-ответы</li>
+              <li><strong>LocalBusiness</strong> — локальный бизнес (адрес, часы)</li>
+            </ul>
+            <div class="note">💡 JSON-LD Google рекомендует как основной способ. Он не засоряет HTML и легко редактируется.</div>
+          `
+        },
+        quiz: [
+          {
+            type: 'choice',
+            q: 'Какой формат микроразметки рекомендует Google?',
+            choices: ['Microdata', 'RDFa', 'JSON-LD', 'YAML'],
+            correct: 2,
+            explain: 'JSON-LD — это JavaScript-объект внутри тега script. Самый чистый и удобный способ.'
+          },
+          {
+            type: 'fill',
+            q: 'Заполни тип script для JSON-LD разметки:',
+            line: '&lt;script type="<input class="fill-input" id="fill-ans" placeholder="?" style="width:140px">"&gt;',
+            answer: 'application/ld+json',
+            hint: 'ld = Linked Data. Этот MIME-тип не выполняется как JS, а парсится поисковиками.',
+            explain: 'application/ld+json — специальный тип. Браузер не выполняет этот script, а Google читает.'
+          },
+          {
+            type: 'code',
+            q: 'Создай JSON-LD разметку для человека с именем "Анна" и email "anna@mail.com".',
+            starter: '',
+            check: (c) => /application\/ld\+json/i.test(c) && /Person/i.test(c) && /Анна/i.test(c) && /anna@mail\.com/i.test(c),
+            hint: '&lt;script type="application/ld+json"&gt;{ "@context": "https://schema.org", "@type": "Person", "name": "Анна", "email": "anna@mail.com" }&lt;/script&gt;',
+            explain: 'Schema.org содержит сотни типов. Person, Organization, Product — самые частые.'
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'html-interactive',
+    icon: '🎮',
+    name: 'HTML: Интерактивность',
+    description: 'Details, Dialog, Progress и другие',
+    topics: [
+      {
+        id: 'details-summary',
+        name: 'Аккордеон без JS',
+        theory: {
+          title: '&lt;details&gt; и &lt;summary&gt;',
+          subtitle: 'Раскрывающиеся блоки на чистом HTML',
+          html: `
+            <p>Тег &lt;details&gt; создаёт раскрывающийся блок (аккордеон) без единой строчки JavaScript.</p>
+            <div class="code-block"><span class="tag">&lt;details&gt;</span>
+  <span class="tag">&lt;summary&gt;</span>Нажми, чтобы раскрыть<span class="tag">&lt;/summary&gt;</span>
+  <span class="tag">&lt;p&gt;</span>Скрытый текст, который появляется при клике.<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;/details&gt;</span></div>
+            <h3>Открыт по умолчанию</h3>
+            <div class="code-block"><span class="tag">&lt;details</span> <span class="attr">open</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;summary&gt;</span>FAQ: Как учить HTML?<span class="tag">&lt;/summary&gt;</span>
+  <span class="tag">&lt;p&gt;</span>Практикой и ещё раз практикой!<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;/details&gt;</span></div>
+            <h3>Стилизация маркера</h3>
+            <div class="code-block"><span class="comment">/* Убрать стандартный треугольник */</span>
+<span class="tag">summary::-webkit-details-marker</span> { <span class="prop">display</span>: <span class="val">none</span>; }
+<span class="tag">summary</span> { 
+  <span class="prop">list-style</span>: <span class="val">none</span>;
+  <span class="prop">cursor</span>: <span class="val">pointer</span>;
+  <span class="prop">padding</span>: <span class="num">10px</span>;
+  <span class="prop">background</span>: <span class="num">#f0f0f0</span>;
+  <span class="prop">border-radius</span>: <span class="num">8px</span>;
+}
+
+<span class="comment">/* Свой маркер */</span>
+<span class="tag">summary::before</span> {
+  <span class="prop">content</span>: <span class="val">"▶ "</span>;
+  <span class="prop">display</span>: <span class="val">inline-block</span>;
+  <span class="prop">transition</span>: <span class="val">transform 0.2s</span>;
+}
+<span class="tag">details[open] summary::before</span> {
+  <span class="prop">transform</span>: <span class="val">rotate(90deg)</span>;
+}</div>
+            <h3>Группировка (аккордеон)</h3>
+            <p>Если дать всем details одинаковый атрибут name, они будут работать как группа — открыт только один.</p>
+            <div class="code-block"><span class="tag">&lt;details</span> <span class="attr">name</span>=<span class="val">"faq"</span><span class="tag">&gt;</span> ... <span class="tag">&lt;/details&gt;</span>
+<span class="tag">&lt;details</span> <span class="attr">name</span>=<span class="val">"faq"</span><span class="tag">&gt;</span> ... <span class="tag">&lt;/details&gt;</span></div>
+            <div class="note">💡 name у details — новое свойство (2024). Работает как name у radio: только один блок в группе открыт.</div>
+          `
+        },
+        quiz: [
+          {
+            type: 'choice',
+            q: 'Какой тег является заголовком раскрывающегося блока details?',
+            choices: ['&lt;title&gt;', '&lt;header&gt;', '&lt;summary&gt;', '&lt;caption&gt;'],
+            correct: 2,
+            explain: '&lt;summary&gt; — это кликабельный заголовок details. Остальной контент скрыт.'
+          },
+          {
+            type: 'fill',
+            q: 'Заполни атрибут, чтобы блок details был открыт по умолчанию:',
+            line: '&lt;details <input class="fill-input" id="fill-ans" placeholder="?" style="width:70px">&gt;',
+            answer: 'open',
+            hint: 'Этот атрибут не требует значения — достаточно его наличия.',
+            explain: 'open — булев атрибут. Его присутствие = true, отсутствие = false. Можно писать просто open.'
+          },
+          {
+            type: 'code',
+            q: 'Создай два раскрывающихся блока с общим атрибутом name="faq", чтобы открывался только один.',
+            starter: '',
+            check: (c) => (c.match(/<details[^>]*name\s*=\s*["']faq["'][^>]*>/gi)||[]).length >= 2,
+            hint: '&lt;details name="faq"&gt;&lt;summary&gt;Вопрос 1&lt;/summary&gt;&lt;p&gt;Ответ 1&lt;/p&gt;&lt;/details&gt; (и такой же второй)',
+            explain: 'Группировка через name — аналог radio. Отлично для FAQ-разделов.'
+          }
+        ]
+      },
+      {
+        id: 'dialog-popover',
+        name: 'Диалоги и Popover',
+        theory: {
+          title: '&lt;dialog&gt; и Popover API',
+          subtitle: 'Модальные окна на чистом HTML',
+          html: `
+            <p>До HTML 5.2 модальные окна делали через div с position:fixed и JS. Теперь есть &lt;dialog&gt;.</p>
+            <h3>Базовый диалог</h3>
+            <div class="code-block"><span class="tag">&lt;dialog</span> <span class="attr">id</span>=<span class="val">"myDialog"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;h2&gt;</span>Подтверждение<span class="tag">&lt;/h2&gt;</span>
+  <span class="tag">&lt;p&gt;</span>Вы уверены?<span class="tag">&lt;/p&gt;</span>
+  <span class="tag">&lt;button</span> <span class="attr">onclick</span>=<span class="val">"this.closest('dialog').close()"</span><span class="tag">&gt;</span>Закрыть<span class="tag">&lt;/button&gt;</span>
+<span class="tag">&lt;/dialog&gt;</span>
+
+<span class="comment">&lt;!-- Открыть диалог --&gt;</span>
+<span class="tag">&lt;button</span> <span class="attr">onclick</span>=<span class="val">"document.getElementById('myDialog').showModal()"</span><span class="tag">&gt;</span>Открыть окно<span class="tag">&lt;/button&gt;</span></div>
+            <h3>Стилизация</h3>
+            <div class="code-block"><span class="tag">dialog</span> {
+  <span class="prop">border</span>: <span class="val">none</span>;
+  <span class="prop">border-radius</span>: <span class="num">12px</span>;
+  <span class="prop">padding</span>: <span class="num">24px</span>;
+  <span class="prop">box-shadow</span>: <span class="num">0 10px 40px rgba(0,0,0,0.3)</span>;
+}
+<span class="tag">dialog::backdrop</span> {
+  <span class="prop">background</span>: <span class="attr">rgba(0,0,0,0.5)</span>;
+  <span class="prop">backdrop-filter</span>: <span class="val">blur(3px)</span>;
+}</div>
+            <h3>Popover API (новинка!)</h3>
+            <p>Ещё проще — элемент с атрибутом popover:</p>
+            <div class="code-block"><span class="comment">&lt;!-- Объявить popover --&gt;</span>
+<span class="tag">&lt;div</span> <span class="attr">id</span>=<span class="val">"myPopover"</span> <span class="attr">popover</span><span class="tag">&gt;</span>
+  Я всплывашка!
+<span class="tag">&lt;/div&gt;</span>
+
+<span class="comment">&lt;!-- Кнопки управления --&gt;</span>
+<span class="tag">&lt;button</span> <span class="attr">popovertarget</span>=<span class="val">"myPopover"</span><span class="tag">&gt;</span>Показать<span class="tag">&lt;/button&gt;</span>
+<span class="tag">&lt;button</span> <span class="attr">popovertarget</span>=<span class="val">"myPopover"</span> <span class="attr">popovertargetaction</span>=<span class="val">"hide"</span><span class="tag">&gt;</span>Скрыть<span class="tag">&lt;/button&gt;</span></div>
+            <div class="warn">⚠️ Popover API свежий (2024). Проверяй поддержку браузерами. Для старых браузеров используй dialog или JS.</div>
+          `
+        },
+        quiz: [
+          {
+            type: 'choice',
+            q: 'Какой метод открывает dialog как модальное окно (с блокировкой фона)?',
+            choices: ['dialog.open()', 'dialog.show()', 'dialog.showModal()', 'dialog.display()'],
+            correct: 2,
+            explain: 'showModal() открывает с блокировкой фона и псевдоэлементом ::backdrop. show() — без блокировки.'
+          },
+          {
+            type: 'fill',
+            q: 'Заполни атрибут, чтобы div стал popover-элементом:',
+            line: '&lt;div <input class="fill-input" id="fill-ans" placeholder="?" style="width:80px">&gt;Содержимое&lt;/div&gt;',
+            answer: 'popover',
+            hint: 'Это новый HTML-атрибут, не требующий JavaScript для базовой работы.',
+            explain: 'Атрибут popover автоматически добавляет элементу z-index, скрытие по Escape и клику вне.'
+          },
+          {
+            type: 'code',
+            q: 'Создай модальное окно dialog с заголовком и кнопкой закрытия.',
+            starter: '',
+            check: (c) => /<dialog[^>]*>/i.test(c) && /showModal/i.test(c) && /close\(\)/i.test(c),
+            hint: '&lt;dialog id="dlg"&gt;&lt;h2&gt;Привет&lt;/h2&gt;&lt;button onclick="document.getElementById(\'dlg\').close()"&gt;OK&lt;/button&gt;&lt;/dialog&gt;&lt;button onclick="document.getElementById(\'dlg\').showModal()"&gt;Открыть&lt;/button&gt;',
+            explain: 'dialog — отличный пример, как HTML эволюционирует и берёт на себя то, что раньше делали только на JS.'
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'html-accessibility',
+    icon: '♿',
+    name: 'HTML: Доступность',
+    description: 'ARIA, роли и screen readers',
+    topics: [
+      {
+        id: 'a11y-basics',
+        name: 'Основы A11y',
+        theory: {
+          title: 'Веб-доступность (A11y)',
+          subtitle: 'Делаем сайт удобным для людей с ограниченными возможностями',
+          html: `
+            <p>A11y — сокращение от Accessibility (a + 11 букв + y). Это про то, чтобы сайтом могли пользоваться все.</p>
+            <h3>Семантический HTML — основа</h3>
+            <p>Скринридеры (программы чтения экрана) ориентируются на теги. Правильные теги = доступный сайт.</p>
+            <div class="code-block"><span class="comment">&lt;!-- Плохо — скринридер не понимает, что это кнопка --&gt;</span>
+<span class="tag">&lt;div</span> <span class="attr">onclick</span>=<span class="val">"click()"</span><span class="tag">&gt;</span>Нажми меня<span class="tag">&lt;/div&gt;</span>
+
+<span class="comment">&lt;!-- Хорошо — скринридер объявит "кнопка" --&gt;</span>
+<span class="tag">&lt;button</span><span class="tag">&gt;</span>Нажми меня<span class="tag">&lt;/button&gt;</span></div>
+            <h3>Alt у изображений</h3>
+            <div class="code-block"><span class="comment">&lt;!-- Описательный alt --&gt;</span>
+<span class="tag">&lt;img</span> <span class="attr">src</span>=<span class="val">"cat.jpg"</span> <span class="attr">alt</span>=<span class="val">"Рыжий кот спит на подоконнике"</span><span class="tag">&gt;</span>
+
+<span class="comment">&lt;!-- Декоративное изображение (скринридер пропустит) --&gt;</span>
+<span class="tag">&lt;img</span> <span class="attr">src</span>=<span class="val">"bg.jpg"</span> <span class="attr">alt</span>=<span class="val">""</span><span class="tag">&gt;</span></div>
+            <h3>Label для инпутов</h3>
+            <div class="code-block"><span class="comment">&lt;!-- Явная связь через for + id --&gt;</span>
+<span class="tag">&lt;label</span> <span class="attr">for</span>=<span class="val">"email"</span><span class="tag">&gt;</span>Ваш email<span class="tag">&lt;/label&gt;</span>
+<span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="val">"email"</span> <span class="attr">id</span>=<span class="val">"email"</span><span class="tag">&gt;</span>
+
+<span class="comment">&lt;!-- Неявная связь (обёртка) --&gt;</span>
+<span class="tag">&lt;label&gt;</span>
+  Имя:
+  <span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="val">"text"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;/label&gt;</span></div>
+            <div class="note">💡 Без label скринридер не знает, что вводить в поле. Пользователь слышит просто "поле ввода".</div>
+          `
+        },
+        quiz: [
+          {
+            type: 'choice',
+            q: 'Что означает A11y?',
+            choices: ['Accessibility', '11 атрибутов', 'All 11 years', 'Access 11'],
+            correct: 0,
+            explain: 'A11y — numeronym: a + 11 букв (ccessibilit) + y = Accessibility.'
+          },
+          {
+            type: 'fill',
+            q: 'Заполни атрибут, чтобы связать label с input:',
+            line: '&lt;label <input class="fill-input" id="fill-ans" placeholder="?" style="width:60px">="name"&gt;Имя&lt;/label&gt;&lt;input id="name"&gt;',
+            answer: 'for',
+            hint: 'Атрибут for у label должен совпадать с id у input.',
+            explain: 'Связь for + id позволяет кликнуть на label и фокус перейдёт в input. Удобно на мобильных.'
+          },
+          {
+            type: 'code',
+            q: 'Создай доступную форму: label для поля "Пароль", input type="password" и кнопку "Войти".',
+            starter: '',
+            check: (c) => /<label[^>]*>/i.test(c) && /type\s*=\s*["']password["']/i.test(c) && /<button[^>]*>Войти<\/button>/i.test(c),
+            hint: '&lt;label for="pass"&gt;Пароль&lt;/label&gt;&lt;input type="password" id="pass"&gt;&lt;button&gt;Войти&lt;/button&gt;',
+            explain: 'Доступная форма = label + правильные input type + семантическая кнопка (не div).'
+          }
+        ]
+      },
+      {
+        id: 'aria-roles',
+        name: 'ARIA-атрибуты',
+        theory: {
+          title: 'ARIA — когда HTML не хватает',
+          subtitle: 'Роли, состояния и свойства для сложных компонентов',
+          html: `
+            <p>ARIA (Accessible Rich Internet Applications) дополняет семантику там, где нативный HTML не справляется.</p>
+            <h3>Правило первое: не ломай HTML</h3>
+            <div class="code-block"><span class="comment">&lt;!-- Не делай так! --&gt;</span>
+<span class="tag">&lt;button</span> <span class="attr">role</span>=<span class="val">"heading"</span> <span class="attr">aria-level</span>=<span class="val">"2"</span><span class="tag">&gt;</span>Заголовок<span class="tag">&lt;/button&gt;</span>
+
+<span class="comment">&lt;!-- Просто используй h2! --&gt;</span>
+<span class="tag">&lt;h2&gt;</span>Заголовок<span class="tag">&lt;/h2&gt;</span></div>
+            <div class="warn">⚠️ No ARIA is better than bad ARIA. Всегда предпочитай нативные теги, если они есть.</div>
+            <h3>Часто используемые ARIA</h3>
+            <div class="code-block"><span class="comment">&lt;!-- Живой регион — объявит об изменениях --&gt;</span>
+<span class="tag">&lt;div</span> <span class="attr">aria-live</span>=<span class="val">"polite"</span><span class="tag">&gt;</span>Ошибка: неверный пароль<span class="tag">&lt;/div&gt;</span>
+
+<span class="comment">&lt;!-- Скрыть от скринридера --&gt;</span>
+<span class="tag">&lt;span</span> <span class="attr">aria-hidden</span>=<span class="val">"true"</span><span class="tag">&gt;</span>★<span class="tag">&lt;/span&gt;</span>  <span class="comment">&lt;!-- декоративная звезда --&gt;</span>
+
+<span class="comment">&lt;!-- Метка для элемента без label --&gt;</span>
+<span class="tag">&lt;div</span> <span class="attr">role</span>=<span class="val">"slider"</span> <span class="attr">aria-label</span>=<span class="val">"Громкость"</span><span class="tag">&gt;</span></div>
+            <h3>Вкладки (tabs) на ARIA</h3>
+            <div class="code-block"><span class="tag">&lt;div</span> <span class="attr">role</span>=<span class="val">"tablist"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;button</span> <span class="attr">role</span>=<span class="val">"tab"</span> <span class="attr">aria-selected</span>=<span class="val">"true"</span><span class="tag">&gt;</span>Вкладка 1<span class="tag">&lt;/button&gt;</span>
+  <span class="tag">&lt;button</span> <span class="attr">role</span>=<span class="val">"tab"</span> <span class="attr">aria-selected</span>=<span class="val">"false"</span><span class="tag">&gt;</span>Вкладка 2<span class="tag">&lt;/button&gt;</span>
+<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;div</span> <span class="attr">role</span>=<span class="val">"tabpanel"</span><span class="tag">&gt;</span>Контент вкладки 1<span class="tag">&lt;/div&gt;</span></div>
+            <div class="note">💡 aria-live="polite" — скринридер объявит контент, когда закончит текущую речь. assertive — прервёт и объявит сразу.</div>
+          `
+        },
+        quiz: [
+          {
+            type: 'choice',
+            q: 'Что делает aria-hidden="true"?',
+            choices: [
+              'Скрывает элемент визуально',
+              'Скрывает элемент от скринридеров',
+              'Делает элемент невидимым для всех',
+              'Анимирует исчезновение'
+            ],
+            correct: 1,
+            explain: 'aria-hidden скрывает только от accessibility tree. Элемент остаётся видимым на экране.'
+          },
+          {
+            type: 'fill',
+            q: 'Заполни атрибут для живого региона, который объявляет изменения вежливо (после завершения речи):',
+            line: '&lt;div aria-live="<input class="fill-input" id="fill-ans" placeholder="?" style="width:80px">"&gt;',
+            answer: 'polite',
+            hint: 'Есть два варианта: polite (вежливый) и assertive (настойчивый).',
+            explain: 'polite — не перебивает скринридер. assertive — прерывает (для критических уведомлений).'
+          },
+          {
+            type: 'code',
+            q: 'Создай прогресс-бар с ролью progressbar и атрибутами aria-valuenow="70" aria-valuemin="0" aria-valuemax="100".',
+            starter: '',
+            check: (c) => /role\s*=\s*["']progressbar["']/i.test(c) && /aria-valuenow\s*=\s*["']70["']/i.test(c),
+            hint: '&lt;div role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:200px;height:20px;background:#eee;border-radius:10px;"&gt;&lt;div style="width:70%;height:100%;background:green;border-radius:10px;"&gt;&lt;/div&gt;&lt;/div&gt;',
+            explain: 'С ролью progressbar скринридер скажет: "индикатор выполнения, 70 процентов". Без роли — просто "элемент".'
+          }
+        ]
+      }
+    ]
+  },
+  
+  
+  {
+    id: 'css-basics',
+    icon: '🎨',
+    name: 'CSS: Основы',
+    description: 'Стили, цвета, шрифты',
+    topics: [
+      {
+        id: 'css-intro',
+        name: 'Что такое CSS',
+        theory: {
+          title: 'CSS — язык стилей',
+          subtitle: 'Как сделать страницу красивой',
+          html: `
+            <p>CSS (Cascading Style Sheets) — язык, который описывает <em>внешний вид</em> HTML-элементов. HTML — скелет, CSS — одежда и макияж.</p>
+            <h3>Синтаксис CSS</h3>
+            <div class="code-block"><span class="tag">h1</span> {                    <span class="comment">/* селектор */</span>
+  <span class="prop">color</span>: <span class="val">red</span>;          <span class="comment">/* свойство: значение */</span>
+  <span class="prop">font-size</span>: <span class="num">24px</span>;
+}</div>
+            <h3>Три способа подключить CSS</h3>
+            <p><strong>1. Inline (встроенный)</strong> — прямо в теге:</p>
+            <div class="code-block"><span class="tag">&lt;p</span> <span class="attr">style</span>=<span class="val">"color: blue; font-size: 18px;"</span><span class="tag">&gt;</span>Текст<span class="tag">&lt;/p&gt;</span></div>
+            <p><strong>2. В теге &lt;style&gt;</strong> — в секции &lt;head&gt;:</p>
+            <div class="code-block"><span class="tag">&lt;style&gt;</span>
+  <span class="tag">p</span> { <span class="prop">color</span>: <span class="val">blue</span>; }
+<span class="tag">&lt;/style&gt;</span></div>
+            <p><strong>3. Внешний файл</strong> — отдельный .css файл:</p>
+            <div class="code-block"><span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="val">"stylesheet"</span> <span class="attr">href</span>=<span class="val">"styles.css"</span><span class="tag">&gt;</span></div>
+            <div class="note">💡 В реальных проектах всегда используют внешний файл. Это удобнее — стили отдельно от HTML.</div>
+            <h3>Популярные свойства</h3>
+            <div class="code-block"><span class="prop">color</span>: <span class="val">red</span>;              <span class="comment">/* цвет текста */</span>
+<span class="prop">background-color</span>: <span class="val">#fff</span>;   <span class="comment">/* фон */</span>
+<span class="prop">font-size</span>: <span class="num">16px</span>;         <span class="comment">/* размер шрифта */</span>
+<span class="prop">font-weight</span>: <span class="val">bold</span>;        <span class="comment">/* жирность */</span>
+<span class="prop">text-align</span>: <span class="val">center</span>;       <span class="comment">/* выравнивание */</span>
+<span class="prop">margin</span>: <span class="num">16px</span>;            <span class="comment">/* внешний отступ */</span>
+<span class="prop">padding</span>: <span class="num">8px</span>;            <span class="comment">/* внутренний отступ */</span></div>
+          `
+        },
+        quiz: [
+          {
+            type: 'choice',
+            q: 'Какое свойство CSS изменяет цвет текста?',
+            choices: ['text-color', 'font-color', 'color', 'foreground'],
+            correct: 2,
+            explain: 'Свойство color задаёт цвет текста. background-color — цвет фона.'
+          },
+          {
+            type: 'choice',
+            q: 'Как правильно написать CSS-правило?',
+            choices: [
+              'h1 { color = red; }',
+              'h1: color: red;',
+              'h1 { color: red; }',
+              'color: h1 { red }'
+            ],
+            correct: 2,
+            explain: 'Синтаксис: селектор { свойство: значение; }. Двоеточие между свойством и значением, точка с запятой в конце.'
+          },
+          {
+            type: 'code',
+            q: 'Напиши параграф &lt;p&gt; с синим цветом текста через атрибут style.',
+            starter: '',
+            check: (c) => /<p[^>]*style[^>]*color\s*:\s*(blue|#0000ff|rgb\(0,\s*0,\s*255\))/i.test(c) && /<\/p>/i.test(c),
+            hint: '&lt;p style="color: blue;"&gt;Текст&lt;/p&gt;',
+            explain: 'Значения цвета в CSS: named (blue, red), hex (#0000ff), rgb(0,0,255) — все варианты работают.'
+          }
+        ]
+      },
+      {
+        id: 'css-box-model',
+        name: 'Блочная модель',
+        theory: {
+          title: 'Блочная модель CSS',
+          subtitle: 'margin, padding, border — три кита вёрстки',
+          html: `
+            <p>Каждый HTML-элемент — это прямоугольный блок. Вокруг него — несколько слоёв:</p>
+            <div class="code-block"><span class="comment">/* снаружи внутрь: */</span>
+<span class="prop">margin</span>   → пространство снаружи элемента
+<span class="prop">border</span>   → рамка вокруг элемента  
+<span class="prop">padding</span>  → отступ внутри рамки
+<span class="comment">           → контент (текст, картинка)</span></div>
+            <h3>Примеры</h3>
+            <div class="code-block"><span class="tag">div</span> {
+  <span class="prop">margin</span>: <span class="num">20px</span>;           <span class="comment">/* 20px со всех сторон */</span>
+  <span class="prop">padding</span>: <span class="num">10px 20px</span>;     <span class="comment">/* 10px верх/низ, 20px лево/право */</span>
+  <span class="prop">border</span>: <span class="num">2px</span> <span class="val">solid</span> <span class="val">black</span>; <span class="comment">/* рамка */</span>
+  <span class="prop">width</span>: <span class="num">300px</span>;
+  <span class="prop">background-color</span>: <span class="val">lightyellow</span>;
+}</div>
+            <div class="note">💡 margin: 10px 20px — это сокращение. 2 значения = верх/низ | лево/право. 4 значения = верх | право | низ | лево (по часовой стрелке).</div>
+            <h3>Типы блоков</h3>
+            <ul>
+              <li><strong>Block-элементы</strong> (&lt;div&gt;, &lt;p&gt;, &lt;h1&gt;) — занимают всю ширину, начинаются с новой строки</li>
+              <li><strong>Inline-элементы</strong> (&lt;span&gt;, &lt;a&gt;, &lt;strong&gt;) — встроены в текст, не переносят строку</li>
+            </ul>
+            <div class="code-block"><span class="tag">span</span> { <span class="prop">display</span>: <span class="val">block</span>; }   <span class="comment">/* меняем тип */</span>
+<span class="tag">div</span>  { <span class="prop">display</span>: <span class="val">inline</span>; }</div>
+          `
+        },
+        quiz: [
+          {
+            type: 'choice',
+            q: 'Что создаёт пространство ВНУТРИ элемента, между контентом и рамкой?',
+            choices: ['margin', 'border', 'padding', 'spacing'],
+            correct: 2,
+            explain: 'padding — внутренний отступ (между контентом и рамкой). margin — внешний (между элементами).'
+          },
+          {
+            type: 'choice',
+            q: 'Что значит margin: 10px 20px?',
+            choices: [
+              '10px сверху, 20px снизу',
+              '10px лево/право, 20px верх/низ',
+              '10px верх/низ, 20px лево/право',
+              'margin-top: 10px, margin: 20px'
+            ],
+            correct: 2,
+            explain: 'При 2 значениях: первое — верх и низ, второе — лево и право.'
+          },
+          {
+            type: 'code',
+            q: 'Создай div с красным фоном, padding 20px и margin 10px.',
+            starter: '',
+            check: (c) => /<div[^>]*style[^>]*(background(-color)?:\s*(red|#ff0000|rgb\(255,\s*0,\s*0\))[\s\S]*padding:\s*20px|padding:\s*20px[\s\S]*background(-color)?:\s*(red|#ff0000|rgb\(255,\s*0,\s*0\)))/i.test(c) && /margin:\s*10px/i.test(c),
+            hint: '&lt;div style="background-color: red; padding: 20px; margin: 10px;"&gt;Привет&lt;/div&gt;',
+            explain: 'Отлично! Теперь попробуй изменить значения и посмотри как меняется блок в превью.'
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'css-layout',
+    icon: '📐',
+    name: 'CSS: Расположение',
+    description: 'Flexbox, Grid, позиционирование',
+    topics: [
+      {
+        id: 'flexbox',
+        name: 'Flexbox',
+        theory: {
+          title: 'Flexbox',
+          subtitle: 'Самый удобный способ расположить элементы',
+          html: `
+            <p>Flexbox — режим CSS, который позволяет легко выстраивать элементы в ряд или колонку и управлять их расположением.</p>
+            <div class="code-block"><span class="tag">.container</span> {
+  <span class="prop">display</span>: <span class="val">flex</span>;                    <span class="comment">/* включаем flexbox */</span>
+  <span class="prop">flex-direction</span>: <span class="val">row</span>;          <span class="comment">/* row | column */</span>
+  <span class="prop">justify-content</span>: <span class="val">center</span>;      <span class="comment">/* по главной оси */</span>
+  <span class="prop">align-items</span>: <span class="val">center</span>;          <span class="comment">/* по поперечной оси */</span>
+  <span class="prop">gap</span>: <span class="num">16px</span>;                    <span class="comment">/* расстояние между элементами */</span>
+}</div>
+            <h3>justify-content — по горизонтали</h3>
+            <ul>
+              <li><code>flex-start</code> — в начало (по умолчанию)</li>
+              <li><code>flex-end</code> — в конец</li>
+              <li><code>center</code> — по центру</li>
+              <li><code>space-between</code> — по краям, равные промежутки между</li>
+              <li><code>space-around</code> — равные промежутки вокруг каждого</li>
+            </ul>
+            <h3>align-items — по вертикали</h3>
+            <ul>
+              <li><code>flex-start</code> — сверху</li>
+              <li><code>center</code> — по центру</li>
+              <li><code>flex-end</code> — снизу</li>
+              <li><code>stretch</code> — растянуть на всю высоту (по умолчанию)</li>
+            </ul>
+            <div class="note">💡 Чтобы отцентрировать элемент по обоим осям: display: flex; justify-content: center; align-items: center;</div>
+          `
+        },
+        quiz: [
+          {
+            type: 'choice',
+            q: 'Какое свойство включает режим Flexbox?',
+            choices: ['flex: true', 'display: flex', 'flex-mode: on', 'layout: flex'],
+            correct: 1,
+            explain: 'display: flex — применяется к родительскому контейнеру и включает flex-режим для его дочерних элементов.'
+          },
+          {
+            type: 'fill',
+            q: 'Заполни значение, чтобы элементы выровнялись по центру по горизонтали:',
+            line: '.box { display: flex; justify-content: <input class="fill-input" id="fill-ans" placeholder="?" style="width:80px">; }',
+            answer: 'center',
+            hint: 'justify-content выравнивает по главной оси (горизонтали при flex-direction: row)',
+            explain: 'justify-content: center — центрирует элементы по горизонтали в flex-контейнере.'
+          },
+          {
+            type: 'code',
+            q: 'Создай div с тремя дочерними div-ами. Примени flexbox с gap: 10px и justify-content: space-between.',
+            starter: '<div style="...три div внутри...">\n  <div>1</div>\n  <div>2</div>\n  <div>3</div>\n</div>',
+            check: (c) => /display\s*:\s*flex/i.test(c) && /gap\s*:\s*10px/i.test(c) && /justify-content\s*:\s*space-between/i.test(c),
+            hint: 'Добавь к внешнему div: style="display: flex; gap: 10px; justify-content: space-between;"',
+            explain: 'space-between — элементы по краям, равные пространства между ними. Идеально для навигации!'
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'css-colors-units',
+    icon: '🎨',
+    name: 'CSS: Цвета и единицы',
+    description: 'HEX, RGB, HSL, px, em, rem, %',
+    topics: [
+      {
+        id: 'color-formats',
+        name: 'Форматы цвета',
+        theory: {
+          title: 'Цвет в вебе',
+          subtitle: 'Как задавать и смешивать цвета',
+          html: `
+            <p>В CSS есть несколько способов записать цвет:</p>
+            <div class="code-block"><span class="prop">color</span>: <span class="val">red</span>; <span class="comment">/* ключевые слова */</span>
+<span class="prop">color</span>: <span class="num">#ff0000</span>; <span class="comment">/* HEX */</span>
+<span class="prop">color</span>: <span class="attr">rgb(255, 0, 0)</span>; <span class="comment">/* RGB */</span>
+<span class="prop">color</span>: <span class="attr">hsl(0, 100%, 50%)</span>; <span class="comment">/* HSL */</span></div>
+            <h3>HEX-коды</h3>
+            <p>Формат <code>#RRGGBB</code>. RR — красный, GG — зелёный, BB — синий (00 — ничего, FF — максимум).</p>
+            <p>Можно сокращать: <code>#f00</code> = <code>#ff0000</code> (красный), <code>#0f0</code> = зелёный, <code>#00f</code> = синий.</p>
+            <h3>RGB и RGBA</h3>
+            <p>RGBA добавляет <strong>альфа-канал</strong> — прозрачность (от 0 до 1).</p>
+            <div class="code-block"><span class="prop">background</span>: <span class="attr">rgba(255, 0, 0, 0.5)</span>; <span class="comment">/* красный с прозрачностью 50% */</span></div>
+            <div class="warn">⚠️ Аналог в HEX: к строке из 6 символов добавляются ещё 2 для прозрачности. #ff000080 = красный 50%.</div>
+            <h3>Единицы измерения</h3>
+            <div class="code-block"><span class="prop">font-size</span>: <span class="num">16px</span>;   <span class="comment">/* пиксели — фиксированный размер */</span>
+<span class="prop">margin</span>: <span class="num">2em</span>;       <span class="comment">/* em — относительно шрифта родителя */</span>
+<span class="prop">font-size</span>: <span class="num">1.5rem</span>; <span class="comment">/* rem — относительно корневого (html) */</span>
+<span class="prop">width</span>: <span class="num">50%</span>;       <span class="comment">/* проценты — относительно родителя */</span>
+<span class="prop">height</span>: <span class="num">100vh</span>;    <span class="comment">/* vh — высота экрана (viewport height) */</span></div>
+            <div class="note">💡 Используй rem для шрифтов (удобно масштабировать), px для рамок, % для резиновых колонок.</div>
+          `
+        },
+        quiz: [
+          {
+            type: 'choice',
+            q: 'Какой цвет получится: #000000?',
+            choices: ['Белый', 'Чёрный', 'Красный', 'Синий'],
+            correct: 1,
+            explain: '#000000 означает отсутствие всех цветов (R=0, G=0, B=0) — это чёрный.'
+          },
+          {
+            type: 'fill',
+            q: 'Допиши CSS: полупрозрачный чёрный фон',
+            line: '.overlay { background: <input class="fill-input" id="fill-ans" placeholder="?" style="width:140px">; }',
+            answer: 'rgba(0, 0, 0, 0.5)',
+            hint: 'Используй rgba() с нулями для цветов и 0.5 для прозрачности.',
+            explain: 'Чёрный = rgb(0,0,0). 0.5 — это 50% непрозрачности (полупрозрачный).'
+          },
+          {
+            type: 'code',
+            q: 'Создай div с полупрозрачным синим фоном и текстом "Hello" белого цвета.',
+            starter: '',
+            check: (c) => /<div[^>]*style[^>]*background[^:]*:\s*rgba\(\s*0\s*,\s*0\s*,\s*255\s*,\s*0\.?5?\s*\)/i.test(c) && /color\s*:\s*white/i.test(c) && /Hello/i.test(c),
+            hint: '&lt;div style="background: rgba(0,0,255,0.5); color: white;"&gt;Hello&lt;/div&gt;',
+            explain: 'Можно было использовать и HEX: background: #0000ff80; — запомни и такой вариант.'
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'css-animations',
+    icon: '✨',
+    name: 'CSS: Анимации',
+    description: 'Transitions и Keyframes',
+    topics: [
+      {
+        id: 'transitions',
+        name: 'Плавные переходы',
+        theory: {
+          title: 'Transitions',
+          subtitle: 'Анимация от А к Б за вас делает браузер',
+          html: `
+            <p><strong>Transition</strong> — это плавное изменение CSS-свойств при смене состояния (например, при наведении).</p>
+            <div class="code-block"><span class="tag">.btn</span> {
+  <span class="prop">background</span>: <span class="val">blue</span>;
+  <span class="prop">transition</span>: <span class="attr">all 0.3s ease</span>;
+}
+<span class="tag">.btn:hover</span> {
+  <span class="prop">background</span>: <span class="val">red</span>;
+  <span class="prop">transform</span>: <span class="val">scale(1.1)</span>;
+}</div>
+            <p>Кликни на кнопку ниже, чтобы увидеть (мысленно представь):</p>
+            <h3>Сокращение</h3>
+            <div class="code-block"><span class="prop">transition</span>: свойство длительность функция задержка;
+<span class="prop">transition</span>: <span class="val">opacity</span> <span class="num">0.5s</span> <span class="val">linear</span> <span class="num">0.1s</span>;</div>
+            <h3>Timing Functions (характер движения)</h3>
+            <ul>
+              <li><strong>ease</strong> — плавно ускоряется и замедляется (по умолчанию)</li>
+              <li><strong>linear</strong> — равномерно</li>
+              <li><strong>ease-in</strong> — медленно начинается</li>
+              <li><strong>ease-out</strong> — медленно заканчивается</li>
+            </ul>
+            <div class="note">💡 Не все свойства можно анимировать. Цвета, размеры, opacity — да. А display или position — нет.</div>
+            <h3>Что можно крутить?</h3>
+            <div class="code-block"><span class="prop">transform</span>: <span class="val">translateX(10px)</span>;  <span class="comment">/* сдвиг */</span>
+<span class="prop">transform</span>: <span class="val">rotate(180deg)</span>;    <span class="comment">/* поворот */</span>
+<span class="prop">transform</span>: <span class="val">scale(1.5)</span>;        <span class="comment">/* масштаб */</span></div>
+          `
+        },
+        quiz: [
+          {
+            type: 'choice',
+            q: 'Какое свойство добавляет плавность при наведении?',
+            choices: ['animation', 'transition', 'transform', 'opacity'],
+            correct: 1,
+            explain: 'transition создаёт плавный переход между двумя состояниями элемента (обычное и :hover).'
+          },
+          {
+            type: 'fill',
+            q: 'Допиши функцию времени, чтобы скорость анимации была постоянной:',
+            line: '.box { transition: all 1s <input class="fill-input" id="fill-ans" placeholder="?" style="width:80px">; }',
+            answer: 'linear',
+            hint: 'Эта функция не ускоряется и не замедляется, работает как метроном.',
+            explain: 'linear — самая простая timing-функция. Объект движется с одинаковой скоростью от начала до конца.'
+          },
+          {
+            type: 'code',
+            q: 'Создай кнопку, которая при наведении плавно увеличивается в 1.2 раза (через transition).',
+            starter: '',
+            check: (c) => /transition/i.test(c) && /:hover/i.test(c) && /scale\s*\(\s*1\.2\s*\)/i.test(c),
+            hint: '&lt;button style="transition: transform 0.3s;" onmouseover="this.style.transform=\'scale(1.2)\'" onmouseout="this.style.transform=\'scale(1)\'"&gt;Кнопка&lt;/button&gt;',
+            explain: 'Обрати внимание: transition пишут в основном состоянии, а не в :hover. Тогда анимация сработает и туда, и обратно.'
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'css-pseudo',
+    icon: '🎯',
+    name: 'CSS: Псевдоклассы',
+    description: ':hover, :nth-child и комбинаторы',
+    topics: [
+      {
+        id: 'pseudo-classes',
+        name: 'Псевдоклассы',
+        theory: {
+          title: 'Магия псевдоклассов',
+          subtitle: 'Стилизация по состоянию и положению',
+          html: `
+            <p>Псевдокласс начинается с двоеточия и описывает <strong>состояние</strong> элемента.</p>
+            <h3>Самые популярные</h3>
+            <div class="code-block"><span class="tag">a:hover</span> { <span class="prop">color</span>: <span class="val">red</span>; }          <span class="comment">/* курсор над ссылкой */</span>
+<span class="tag">a:visited</span> { <span class="prop">color</span>: <span class="val">purple</span>; }     <span class="comment">/* посещённая ссылка */</span>
+<span class="tag">input:focus</span> { <span class="prop">border-color</span>: <span class="val">blue</span>; } <span class="comment">/* фокус на поле ввода */</span>
+<span class="tag">button:active</span> { <span class="prop">transform</span>: <span class="val">scale(0.95)</span>; } <span class="comment">/* в момент нажатия */</span>
+<span class="tag">:first-child</span> { <span class="prop">margin-top</span>: <span class="num">0</span>; }   <span class="comment">/* первый дочерний элемент */</span>
+<span class="tag">:last-child</span> { <span class="prop">margin-bottom</span>: <span class="num">0</span>; } <span class="comment">/* последний */</span></div>
+            <h3>nth-child — выбор по номеру</h3>
+            <div class="code-block"><span class="comment">/* Выбрать каждый чётный элемент */</span>
+<span class="tag">li:nth-child(even)</span> { <span class="prop">background</span>: <span class="num">#f0f0f0</span>; }
+
+<span class="comment">/* Выбрать 3-й элемент */</span>
+<span class="tag">li:nth-child(3)</span> { <span class="prop">font-weight</span>: <span class="val">bold</span>; }
+
+<span class="comment">/* Выбрать каждый 3-й, начиная с первого: 1, 4, 7... */</span>
+<span class="tag">li:nth-child(3n+1)</span> { <span class="prop">color</span>: <span class="val">blue</span>; }</div>
+            <div class="note">💡 even = 2n, odd = 2n+1. nth-child считает всех детей, не только нужный тег.</div>
+            <h3>Псевдоэлементы ::before и ::after</h3>
+            <p>Создают виртуальные элементы ДО и ПОСЛЕ контента (не требуют HTML-кода).</p>
+            <div class="code-block"><span class="tag">.quote::before</span> {
+  <span class="prop">content</span>: <span class="val">"«"</span>;   <span class="comment">/* обязательно! */</span>
+  <span class="prop">color</span>: <span class="val">gray</span>;
+}
+<span class="tag">.quote::after</span> {
+  <span class="prop">content</span>: <span class="val">"»"</span>;
+  <span class="prop">color</span>: <span class="val">gray</span>;
+}</div>
+            <div class="warn">⚠️ Без свойства content псевдоэлемент не появится. Можно оставить content: "" (пустой), например для декоративных линий.</div>
+          `
+        },
+        quiz: [
+          {
+            type: 'choice',
+            q: 'Какой псевдокласс срабатывает при наведении курсора?',
+            choices: [':click', ':over', ':hover', ':focus'],
+            correct: 2,
+            explain: ':hover — одно из самых используемых свойств для интерактивности.'
+          },
+          {
+            type: 'fill',
+            q: 'Напиши псевдокласс для выбора каждого нечётного элемента:',
+            line: 'li:<input class="fill-input" id="fill-ans" placeholder="?" style="width:80px"> { background: yellow; }',
+            answer: 'nth-child(odd)',
+            hint: 'odd — нечётные, even — чётные.',
+            explain: 'nth-child(odd) выберет 1, 3, 5 элементы. Равнозначно nth-child(2n+1).'
+          },
+          {
+            type: 'code',
+            q: 'Создай список из 5 пунктов. Сделай каждый чётный пункт с красным текстом (через style или тег style).',
+            starter: '',
+            check: (c) => /nth-child\(even\)/i.test(c) && /color\s*:\s*red/i.test(c) && (c.match(/<li>/gi)||[]).length >= 5,
+            hint: '&lt;style&gt;li:nth-child(even){color:red;}&lt;/style&gt;&lt;ul&gt;&lt;li&gt;1&lt;/li&gt;...&lt;li&gt;5&lt;/li&gt;&lt;/ul&gt;',
+            explain: 'Чётные: 2-й, 4-й элементы. nth-child считает порядковый номер среди всех детей родителя.'
+          }
+        ]
+      },
+      {
+        id: 'combinators',
+        name: 'Комбинаторы',
+        theory: {
+          title: 'Комбинаторы CSS',
+          subtitle: 'Как выбирать элементы по их связи друг с другом',
+          html: `
+            <p>Комбинаторы — это символы между селекторами, которые описывают их отношения.</p>
+            <h3>Пробел — потомок</h3>
+            <div class="code-block"><span class="tag">.menu a</span> { <span class="prop">color</span>: <span class="val">white</span>; }
+<span class="comment">/* Все ссылки ВНУТРИ .menu (любой вложенности) */</span></div>
+            <h3>&gt; — прямой ребёнок</h3>
+            <div class="code-block"><span class="tag">.menu > li</span> { <span class="prop">display</span>: <span class="val">inline-block</span>; }
+<span class="comment">/* Только li, которые ЯВЛЯЮТСЯ прямыми детьми .menu */</span></div>
+            <h3>+ — сосед сразу после</h3>
+            <div class="code-block"><span class="tag">h2 + p</span> { <span class="prop">font-style</span>: <span class="val">italic</span>; }
+<span class="comment">/* Только тот p, который идёт СРАЗУ ПОСЛЕ h2 */</span></div>
+            <h3>~ — все последующие соседи</h3>
+            <div class="code-block"><span class="tag">h2 ~ p</span> { <span class="prop">color</span>: <span class="val">gray</span>; }
+<span class="comment">/* ВСЕ p, которые идут после h2 на том же уровне */</span></div>
+            <div class="note">💡 Разница между + и ~: плюс выберет только первый подходящий элемент, тильда — все подходящие после.</div>
+            <h3>Группировка селекторов</h3>
+            <div class="code-block"><span class="tag">h1, h2, h3</span> { <span class="prop">font-family</span>: <span class="val">sans-serif</span>; }
+<span class="comment">/* Запятая = И то, И другое, И третье */</span></div>
+          `
+        },
+        quiz: [
+          {
+            type: 'choice',
+            q: 'Что выберет селектор .box > p?',
+            choices: [
+              'Все p внутри .box',
+              'Только p, которые являются прямыми детьми .box',
+              'Только первый p в .box',
+              'Все p на странице'
+            ],
+            correct: 1,
+            explain: 'Символ > ограничивает выборку только прямыми наследниками (один уровень вложенности).'
+          },
+          {
+            type: 'fill',
+            q: 'Какой символ используется для выбора соседа, идущего сразу после?',
+            line: 'h2 <input class="fill-input" id="fill-ans" placeholder="?" style="width:60px"> p { ... }',
+            answer: '+',
+            hint: 'Этот символ означает "сразу после".',
+            explain: 'Плюс (+) — adjacent sibling combinator. Выбирает элемент, который идёт непосредственно за указанным.'
+          },
+          {
+            type: 'code',
+            q: 'Напиши CSS, который делает красным цвет текста у всех ссылок внутри элемента с классом "nav".',
+            starter: '',
+            check: (c) => /\.nav\s+a\s*\{[^}]*color\s*:\s*red/i.test(c) || /\.nav\s+a\s*\{[^}]*color\s*:\s*#ff0+0+/i.test(c),
+            hint: 'Используй пробел между .nav и a: .nav a { color: red; }',
+            explain: 'Пробел — самый частый комбинатор. Означает "где-то внутри", не важно насколько глубоко.'
+          }
+        ]
+      }
+    ]
+  }
+  /* 
+  ╔══════════════════════════════════════════════════╗
+  ║  ДОБАВЬ НОВЫЙ КУРС ЗДЕСЬ — просто скопируй      ║
+  ║  объект выше и измени данные                     ║
+  ╚══════════════════════════════════════════════════╝
+  ,{
+    id: 'my-new-course',
+    icon: '⚡',
+    name: 'Новый курс',
+    description: 'Описание курса',
+    topics: [
+      {
+        id: 'topic-1',
+        name: 'Первая тема',
+        theory: { title: '...', subtitle: '...', html: '...' },
+        quiz: [
+          { type: 'choice', q: 'Вопрос?', choices: ['A','B','C','D'], correct: 0, explain: '...' },
+          { type: 'fill', q: 'Заполни:', line: 'код ___ продолжение', answer: 'ответ', hint: '...', explain: '...' },
+          { type: 'code', q: 'Напиши:', starter: '', check: (c) => /regex/.test(c), hint: '...', explain: '...' }
+        ]
+      }
+    ]
+  }
+  */
+];
+
+/* ══════ STATE ══════ */
+let state = {
+  xp: 0,
+  done: {},     // { topicId: true }
+  screen: 'home',
+  activeCourse: null,
+  activeTopic: null,
+  step: 0,      // 0 = theory, 1..n = quiz questions
+  lessonXP: 0,
+  answered: false,
+  selectedChoice: null,
+};
+
+function save() { try { localStorage.setItem('ts_state', JSON.stringify({ xp: state.xp, done: state.done })); } catch(e){} }
+function load() { try { const d = JSON.parse(localStorage.getItem('ts_state')||'{}'); state.xp = d.xp||0; state.done = d.done||{}; } catch(e){} }
+load();
+
+/* ══════ HELPERS ══════ */
+function totalTopics() { return COURSES.reduce((a,c) => a + c.topics.length, 0); }
+function doneCourse(course) { return course.topics.filter(t => state.done[t.id]).length; }
+function topicProgress(course) { return Math.round(doneCourse(course) / course.topics.length * 100); }
+function nextUndone() {
+  for (const c of COURSES) for (const t of c.topics) if (!state.done[t.id]) return { course: c, topic: t };
+  return null;
+}
+
+/* ══════ RENDER ══════ */
+function render() {
+  renderSidebar();
+  const main = document.getElementById('main');
+  if (state.screen === 'home') main.innerHTML = renderHome();
+  else if (state.screen === 'lesson') main.innerHTML = renderLesson();
+  bindEvents();
+}
+
+function renderSidebar() {
+  const doneCount = Object.keys(state.done).length;
+  const total = totalTopics();
+  const pct = total ? Math.round(doneCount / total * 100) : 0;
+  document.getElementById('sb-xp').textContent = state.xp + ' XP';
+  document.getElementById('sb-xp-bar').style.width = pct + '%';
+
+  let html = '';
+  for (const course of COURSES) {
+    const done = doneCourse(course);
+    const isActiveCourse = state.activeCourse && state.activeCourse.id === course.id;
+    html += `<div class="course-item ${isActiveCourse ? 'active' : ''}" data-course="${course.id}">
+      <span class="course-icon">${course.icon}</span>
+      <div class="course-info">
+        <div class="course-name">${course.name}</div>
+        <div class="course-meta">${done}/${course.topics.length} тем</div>
+      </div>
+      ${done === course.topics.length && done > 0 ? '<span class="course-badge">✓</span>' : `<span class="course-badge">${done > 0 ? done+'/' : ''}${course.topics.length}</span>`}
+    </div>`;
+    if (isActiveCourse) {
+      for (const t of course.topics) {
+        const isDone = state.done[t.id];
+        const isActive = state.activeTopic && state.activeTopic.id === t.id;
+        html += `<div class="topic-item ${isDone ? 'done' : ''} ${isActive ? 'active' : ''}" data-topic="${t.id}" data-course="${course.id}">
+          <span class="t-dot"></span>${t.name}${isDone ? ' ✓' : ''}
+        </div>`;
+      }
+    }
+  }
+  document.getElementById('sidebar-courses').innerHTML = `<div class="sidebar-section-label">Курсы</div>` + html;
+}
+
+function renderHome() {
+  const doneCount = Object.keys(state.done).length;
+  const total = totalTopics();
+  const next = nextUndone();
+
+  let continueCard = '';
+  if (next) {
+    continueCard = `<div class="continue-card" id="btn-continue">
+      <div class="continue-emoji">${next.course.icon}</div>
+      <div class="continue-info">
+        <h3>${next.topic.name}</h3>
+        <p>${next.course.name}</p>
+      </div>
+      <button class="continue-btn">Продолжить →</button>
+    </div>`;
+  }
+
+  let coursesGrid = COURSES.map(c => {
+    const done = doneCourse(c);
+    const pct = c.topics.length ? Math.round(done / c.topics.length * 100) : 0;
+    return `<div class="course-card" data-course="${c.id}">
+      <div class="course-card-icon">${c.icon}</div>
+      <div class="course-card-name">${c.name}</div>
+      <div class="course-card-desc">${c.description}</div>
+      <div class="mini-progress"><div class="mini-progress-bar" style="width:${pct}%"></div></div>
+      <div class="course-card-foot"><span>${c.topics.length} тем</span><span>${pct}%</span></div>
+    </div>`;
+  }).join('');
+
+  return `<div class="home-hero">
+    <h1>Привет! Учи HTML & CSS 👋</h1>
+    <p>Теория + практика в каждом уроке. ${doneCount} из ${total} тем завершено.</p>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Опыт</div><div class="stat-val green">${state.xp} XP</div></div>
+    <div class="stat-card"><div class="stat-label">Тем пройдено</div><div class="stat-val orange">${doneCount}</div></div>
+    <div class="stat-card"><div class="stat-label">Осталось</div><div class="stat-val blue">${total - doneCount}</div></div>
+  </div>
+  ${continueCard}
+  <div class="courses-grid">${coursesGrid}</div>`;
+}
+
+function renderLesson() {
+  const topic = state.activeTopic;
+  const quizLen = topic.quiz.length;
+  const totalSteps = 1 + quizLen; // 1 theory + n quiz
+  const progressPct = Math.round(state.step / totalSteps * 100);
+
+  const topBar = `<div class="lesson-topbar">
+    <button class="back-btn" id="btn-back">← Назад</button>
+    <div class="lesson-progress"><div class="lesson-progress-bar" id="lp-bar" style="width:${progressPct}%"></div></div>
+    <div class="lesson-xp-live" id="live-xp">+${state.lessonXP} XP</div>
+  </div>`;
+
+  if (state.step === 0) {
+    return `<div class="lesson-wrap">${topBar}${renderTheory()}</div>`;
+  } else if (state.step <= quizLen) {
+    const q = topic.quiz[state.step - 1];
+    return `<div class="lesson-wrap">${topBar}${renderQuiz(q, state.step, quizLen)}</div>`;
+  } else {
+    return `<div class="lesson-wrap">${topBar}${renderComplete()}</div>`;
+  }
+}
+
+function renderTheory() {
+  const t = state.activeTopic.theory;
+  const c = state.activeCourse;
+  return `<div>
+    <div class="theory-header">
+      <div class="theory-course-tag">${c.icon} ${c.name}</div>
+      <h2 class="theory-title">${t.title}</h2>
+      <p class="theory-subtitle">${t.subtitle}</p>
+    </div>
+    <div class="theory-body">${t.html}</div>
+    <div class="theory-nav">
+      <button class="btn-primary" id="btn-to-quiz">Перейти к заданиям →</button>
+    </div>
+  </div>`;
+}
+
+function renderQuiz(q, qNum, total) {
+  let body = '';
+  if (q.type === 'choice') {
+    const letters = ['A','B','C','D'];
+    body = `<div class="choices">${q.choices.map((c,i) => `
+      <button class="choice-btn" data-idx="${i}">
+        <span class="choice-letter">${letters[i]}</span>
+        <span>${c}</span>
+      </button>`).join('')}</div>`;
+  } else if (q.type === 'code') {
+    body = `<div class="code-quiz-wrap">
+      <div>
+        <div class="pane-head"><span class="dot-g"></span>Твой код</div>
+        <textarea class="code-editor" id="code-input" spellcheck="false">${q.starter}</textarea>
+      </div>
+      <div>
+        <div class="pane-head"><span class="dot-b"></span>Результат</div>
+        <div class="preview-frame"><iframe id="preview-frame" title="Превью"></iframe></div>
+      </div>
+    </div>`;
+  } else if (q.type === 'fill') {
+    body = `<div class="fill-line">${q.line}</div>`;
+  }
+
+  return `<div>
+    <div class="quiz-tag">Вопрос ${qNum} из ${total}</div>
+    <div class="quiz-q">${q.q}</div>
+    <div class="quiz-sub">${q.type === 'code' ? 'Напиши код и нажми «Проверить»' : q.type === 'fill' ? 'Заполни пропуск' : 'Выбери один правильный ответ'}</div>
+    ${body}
+    <div class="quiz-feedback" id="quiz-feedback">
+      <span class="fb-icon" id="fb-icon"></span>
+      <div class="fb-msg" id="fb-msg"></div>
+    </div>
+    <div class="quiz-nav">
+      <button class="btn-secondary" id="btn-hint-q">💡 Подсказка</button>
+      <button class="btn-check" id="btn-check-q" ${q.type === 'choice' ? 'disabled' : ''}>Проверить</button>
+    </div>
+  </div>`;
+}
+
+function renderComplete() {
+  const topic = state.activeTopic;
+  const course = state.activeCourse;
+  const next = course.topics.find((t,i) => {
+    const idx = course.topics.indexOf(topic);
+    return i > idx && !state.done[t.id];
+  });
+  return `<div class="complete-wrap">
+    <div class="complete-icon">🎉</div>
+    <div class="complete-title">Тема пройдена!</div>
+    <div class="complete-sub">«${topic.name}» — ${course.name}</div>
+    <div class="xp-pill">⚡ +${state.lessonXP} XP</div>
+    <div class="complete-btns">
+      <button class="btn-secondary" id="btn-home">На главную</button>
+      ${next ? `<button class="btn-primary" id="btn-next-topic" data-topic="${next.id}">Следующая тема →</button>` : `<button class="btn-primary" id="btn-home2">Завершить курс 🏆</button>`}
+    </div>
+  </div>`;
+}
+
+/* ══════ EVENTS ══════ */
+function bindEvents() {
+  // Sidebar course click
+  document.querySelectorAll('.course-item[data-course]').forEach(el => {
+    el.addEventListener('click', () => {
+      const c = COURSES.find(x => x.id === el.dataset.course);
+      if (!c) return;
+      if (state.activeCourse && state.activeCourse.id === c.id) {
+        state.activeCourse = null;
+      } else {
+        state.activeCourse = c;
+        state.activeTopic = null;
+      }
+      state.screen = 'home';
+      render();
+    });
+  });
+
+  // Sidebar topic click
+  document.querySelectorAll('.topic-item[data-topic]').forEach(el => {
+    el.addEventListener('click', () => {
+      const c = COURSES.find(x => x.id === el.dataset.course);
+      const t = c && c.topics.find(x => x.id === el.dataset.topic);
+      if (!t) return;
+      startLesson(c, t);
+    });
+  });
+
+  // Home cards
+  document.querySelectorAll('.course-card[data-course]').forEach(el => {
+    el.addEventListener('click', () => {
+      const c = COURSES.find(x => x.id === el.dataset.course);
+      if (!c) return;
+      state.activeCourse = c;
+      const first = c.topics.find(t => !state.done[t.id]) || c.topics[0];
+      startLesson(c, first);
+    });
+  });
+
+  // Continue button
+  const btnContinue = document.getElementById('btn-continue');
+  if (btnContinue) btnContinue.addEventListener('click', () => {
+    const next = nextUndone();
+    if (next) startLesson(next.course, next.topic);
+  });
+
+  // Lesson events
+  const btnBack = document.getElementById('btn-back');
+  if (btnBack) btnBack.addEventListener('click', () => {
+    state.screen = 'home'; render();
+  });
+
+  const btnToQuiz = document.getElementById('btn-to-quiz');
+  if (btnToQuiz) btnToQuiz.addEventListener('click', () => {
+    state.step = 1; render(); setupQuizStep();
+  });
+
+  const btnCheck = document.getElementById('btn-check-q');
+  if (btnCheck) btnCheck.addEventListener('click', checkAnswer);
+
+  const btnHint = document.getElementById('btn-hint-q');
+  if (btnHint) btnHint.addEventListener('click', showHint);
+
+  // Choice buttons
+  document.querySelectorAll('.choice-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (state.answered) return;
+      state.selectedChoice = parseInt(btn.dataset.idx);
+      document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      const checkBtn = document.getElementById('btn-check-q');
+      if (checkBtn) checkBtn.disabled = false;
+    });
+  });
+
+  // Next topic from complete
+  const btnNextTopic = document.getElementById('btn-next-topic');
+  if (btnNextTopic) btnNextTopic.addEventListener('click', () => {
+    const t = state.activeCourse.topics.find(x => x.id === btnNextTopic.dataset.topic);
+    if (t) startLesson(state.activeCourse, t);
+  });
+
+  const btnHome = document.getElementById('btn-home');
+  if (btnHome) btnHome.addEventListener('click', () => { state.screen = 'home'; render(); });
+  const btnHome2 = document.getElementById('btn-home2');
+  if (btnHome2) btnHome2.addEventListener('click', () => { state.screen = 'home'; render(); });
+
+  setupQuizStep();
+}
+
+function setupQuizStep() {
+  if (state.screen !== 'lesson' || state.step === 0 || state.step > state.activeTopic.quiz.length) return;
+  const q = state.activeTopic.quiz[state.step - 1];
+  state.answered = false;
+  state.selectedChoice = null;
+  if (q.type === 'code') {
+    const input = document.getElementById('code-input');
+    const frame = document.getElementById('preview-frame');
+    if (input && frame) {
+      const update = () => {
+        const doc = frame.contentDocument || frame.contentWindow.document;
+        doc.open(); doc.write(`<!DOCTYPE html><html><head><style>body{font-family:sans-serif;padding:10px;font-size:13px;}</style></head><body>${input.value}</body></html>`); doc.close();
+      };
+      input.addEventListener('input', update);
+      update();
+    }
+  }
+}
+
+function showHint() {
+  const q = state.activeTopic.quiz[state.step - 1];
+  const fb = document.getElementById('quiz-feedback');
+  const icon = document.getElementById('fb-icon');
+  const msg = document.getElementById('fb-msg');
+  if (!fb) return;
+  fb.className = 'quiz-feedback show';
+  fb.style.background = 'var(--yellow-dim)';
+  fb.style.borderColor = 'rgba(251,191,36,0.3)';
+  fb.style.color = 'var(--yellow)';
+  if (icon) icon.textContent = '💡';
+  if (msg) msg.innerHTML = `<strong>Подсказка</strong>${q.hint}`;
+}
+
+function checkAnswer() {
+  if (state.answered) { advanceStep(); return; }
+  const q = state.activeTopic.quiz[state.step - 1];
+  let correct = false;
+
+  if (q.type === 'choice') {
+    correct = state.selectedChoice === q.correct;
+    document.querySelectorAll('.choice-btn').forEach((btn, i) => {
+      btn.disabled = true;
+      if (i === q.correct) btn.classList.add('correct');
+      else if (i === state.selectedChoice && !correct) btn.classList.add('wrong');
+    });
+  } else if (q.type === 'code') {
+    const code = document.getElementById('code-input')?.value || '';
+    correct = q.check(code);
+  } else if (q.type === 'fill') {
+    const ans = document.getElementById('fill-ans')?.value?.trim() || '';
+    correct = ans.toLowerCase() === q.answer.toLowerCase();
+  }
+
+  state.answered = true;
+  const xpEarned = correct ? 10 : 0;
+  state.lessonXP += xpEarned;
+
+  const fb = document.getElementById('quiz-feedback');
+  const icon = document.getElementById('fb-icon');
+  const msg = document.getElementById('fb-msg');
+  const checkBtn = document.getElementById('btn-check-q');
+
+  if (fb) {
+    fb.className = 'quiz-feedback show ' + (correct ? 'ok' : 'fail');
+    fb.style.background = '';
+    fb.style.borderColor = '';
+    fb.style.color = '';
+  }
+  if (icon) icon.textContent = correct ? '✅' : '❌';
+  if (msg) msg.innerHTML = correct
+    ? `<strong>Верно! +${xpEarned} XP</strong>${q.explain || ''}`
+    : `<strong>Не совсем...</strong>${q.hint || q.explain || 'Попробуй ещё раз!'}`;
+  if (checkBtn) { checkBtn.textContent = 'Далее →'; checkBtn.disabled = false; }
+  document.getElementById('live-xp').textContent = '+' + state.lessonXP + ' XP';
+}
+
+function advanceStep() {
+  state.step++;
+  if (state.step > state.activeTopic.quiz.length) {
+    // Complete!
+    state.done[state.activeTopic.id] = true;
+    state.xp += state.lessonXP;
+    save();
+  }
+  render();
+  if (state.step > 0 && state.step <= state.activeTopic.quiz.length) setupQuizStep();
+  updateProgressBar();
+}
+
+function updateProgressBar() {
+  const bar = document.getElementById('lp-bar');
+  if (!bar) return;
+  const total = 1 + state.activeTopic.quiz.length;
+  bar.style.width = Math.round(state.step / total * 100) + '%';
+}
+
+function startLesson(course, topic) {
+  state.activeCourse = course;
+  state.activeTopic = topic;
+  state.screen = 'lesson';
+  state.step = 0;
+  state.lessonXP = 0;
+  state.answered = false;
+  state.selectedChoice = null;
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

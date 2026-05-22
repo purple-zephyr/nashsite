@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ЦСК — Каталог рабочей силы</title>
+    <style>
+        :root {
+            --csk-blue: #0f4c81;     /* Фирменный синий ЦСК */
+            --csk-red: #e31e24;      /* Фирменный красный ЦСК (акции, скидки) */
+            --csk-dark-blue: #0b3c66;
+            --bg-gray: #f5f7fa;      /* Светло-серый фон сайта */
+            --text-dark: #2c3e50;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-gray);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Шапка в стиле официального сайта */
+        header {
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .top-bar {
+            background-color: var(--csk-blue);
+            color: #fff;
+            padding: 10px 20px;
+            font-size: 14px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .main-header {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Имитация логотипа ЦСК */
+        .csk-logo {
+            background-color: var(--csk-red);
+            color: #fff;
+            font-size: 32px;
+            font-weight: 900;
+            padding: 5px 20px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+            text-decoration: none;
+        }
+
+        .logo-text {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.3;
+        }
+
+        .search-bar {
+            background: #eee;
+            padding: 12px 20px;
+            border-radius: 4px;
+            width: 40%;
+            color: #777;
+            font-size: 14px;
+            border: 1px solid #ddd;
+        }
+
+        .catalog-title-box {
+            max-width: 1200px;
+            margin: 20px auto 10px auto;
+            padding: 0 20px;
+        }
+
+        .catalog-title-box h1 {
+            font-size: 26px;
+            margin: 0;
+            color: #111;
+        }
+
+        /* Главный контейнер каталога */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto 40px auto;
+            padding: 0 20px;
+            flex: 1;
+        }
+
+        /* Сетка товаров */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        /* Карточка "товара" (одногруппника) */
+        .product-card {
+            background: #fff;
+            border: 1px solid #e1e4e8;
+            border-radius: 4px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: var(--csk-blue);
+        }
+
+        /* Красный стикер акции/скидки */
+        .badge-sale {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: var(--csk-red);
+            color: white;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 3px;
+            z-index: 10;
+        }
+
+        /* Контейнер для фото */
+        .product-image-box {
+            height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            position: relative;
+            background-color: #fafafa;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        /* ТЕГ ДЛЯ ФОТО: стилизован под каталог */
+        .product-image-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+
+        /* Заглушка, если фотку еще не вставили */
+        .no-photo-placeholder {
+            position: absolute;
+            color: #ccc;
+            font-size: 14px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .stock-status {
+            font-size: 13px;
+            color: #2ed573; /* Зеленый в наличии */
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stock-status.risk {
+            color: #ffa502; /* Оранжевый — статус под вопросом */
+        }
+
+        .product-name {
+            font-size: 15px;
+            font-weight: bold;
+            line-height: 1.4;
+            color: var(--csk-blue);
+            margin-bottom: 10px;
+            min-height: 42px; /* чтобы выравнивались */
+        }
+
+        .product-desc {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 15px;
+            flex-grow: 1;
+            font-style: italic;
+        }
+
+        /* Блок цены в стиле ЦСК */
+        .price-box {
+            margin-top: auto;
+            border-top: 1px solid #f0f0f0;
+            padding-top: 12px;
+            margin-bottom: 15px;
+        }
+
+        .old-price {
+            font-size: 12px;
+            color: #999;
+            text-decoration: line-through;
+            margin-bottom: 2px;
+        }
+
+        .current-price {
+            font-size: 20px;
+            font-weight: bold;
+            color: #111;
+        }
+
+        .current-price span {
+            font-size: 14px;
+            font-weight: normal;
+            color: #666;
+        }
+
+        /* Кнопка "В корзину" (В ЦСК они синие или красные) */
+        .btn-buy {
+            background-color: var(--csk-blue);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .btn-buy:hover {
+            background-color: var(--csk-dark-blue);
+        }
+
+        footer {
+            background: #2c3e50;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        АКЦИЯ: Приведи не сдавшего одногруппника — получи зачет автоматом!
+    </div>
+
+    <header>
+        <div class="main-header">
+            <div class="logo-area">
+                <a href="#" class="csk-logo">ЦСК</a>
+                <div class="logo-text">Строительный гипермаркет<br><b>Отдел: «Тяжелая атлетика (Цемент)»</b></div>
+            </div>
+            <div class="search-bar">🔍 Поиск по недосдачам и хвостам...</div>
+        </div>
+    </header>
+
+    <div class="catalog-title-box">
+        <h1>Каталог грузчиков (Сессия 2026)</h1>
+    </div>
+
+    <div class="container">
+        <div class="grid">
+
+            <div class="product-card">
+                <div class="badge-sale">АКЦИЯ -100% ЗАЧЕТА</div>
+                <div class="product-image-box">
+                    
+                    <img src="ivan.jpg" alt="Имя Одногруппника" onerror="this.style.display='none';">
+                    
+                    <div class="no-photo-placeholder">👷‍♂️<br>[ Поставьте фото ivan.jpg ]</div>
+                </div>
+                <div class="stock-status">● Готов к погрузке</div>
+                <div class="product-name">Усатый</div>
+                <div class="product-desc">«Не пришел на 3 лекции, не знает формулу бетона»</div>
+                <div class="price-box">
+                    <div class="old-price">60 баллов</div>
+                    <div class="current-price">0 <span>баллов / семестр</span></div>
+                </div>
+                <button class="btn-buy" onclick="alert('Грузчик забронирован на склад ЦСК!')">Отправить на склад</button>
+            </div>
+
+            <div class="product-card">
+                <div class="badge-sale">ХИТ СЕЗОНА</div>
+                <div class="product-image-box">
+                    
+                    <img src="alex.jpg" alt="Имя Одногруппника" onerror="this.style.display='none';">
+                    
+                    <div class="no-photo-placeholder">🧱<br>[ Поставьте фото alex.jpg ]</div>
+                </div>
+                <div class="stock-status risk">● Кандидат (Шанс выжить: 5%)</div>
+                <div class="product-name">Петров Алексей Сергеевич</div>
+                <div class="product-desc">«Сказал прероду, что его предмет не пригодится в жизни»</div>
+                <div class="price-box">
+                    <div class="old-price">45 баллов</div>
+                    <div class="current-price">12 <span>мешков / час</span></div>
+                </div>
+                <button class="btn-buy" onclick="alert('Грузчик забронирован на склад ЦСК!')">Выдать тачку</button>
+            </div>
+
+            <div class="product-card">
+                <div class="badge-sale">СКОРО НА СКЛАДЕ</div>
+                <div class="product-image-box">
+                    
+                    <img src="sergey.jpg" alt="Имя Одногруппника" onerror="this.style.display='none';">
+                    
+                    <div class="no-photo-placeholder">💪<br>[ Поставьте фото sergey.jpg ]</div>
+                </div>
+                <div class="stock-status">● Ждет пересдачу</div>
+                <div class="product-name">Смирнов Сергей Владимирович</div>
+                <div class="product-desc">«Проспал коллоквиум, надеется на чудо и калькулятор»</div>
+                <div class="price-box">
+                    <div class="old-price">55 баллов</div>
+                    <div class="current-price">50 <span>кг (М500)</span></div>
+                </div>
+                <button class="btn-buy" onclick="alert('Грузчик забронирован на склад ЦСК!')">Оформить доставку</button>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 Официальный фан-каталог ЦСК. Все совпадения с реальными студентами согласованы с деканатом.</p>
+    </footer>
+
+</body>
+</html>

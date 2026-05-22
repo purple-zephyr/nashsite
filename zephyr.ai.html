@@ -3,29 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zephyr.AI</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js">
-    </script>
+    <title>Zephyr.AI Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        /* СТИЛИ (CSS) */
         :root {
             --bg-color: #f5f5f7;
-            /* Светло-серый фон как в macOS */
             --chat-bg: #ffffff;
-            /* Белый закругленный контейнер */
             --text-dark: #1d1d1f;
             --text-light: #ffffff;
             --black-accent: #000000;
-            /* Черные вставки */
             --grey-border: #d2d2d7;
             --user-msg-bg: #e8e8ed;
+            --panel-bg: #f5f5f7;
             --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+            --transition-speed: 0.3s;
+        }
+
+        /* Цвета для Тёмной Темы */
+        [data-theme="dark"] {
+            --bg-color: #000000;
+            --chat-bg: #1c1c1e;
+            --text-dark: #f5f5f7;
+            --text-light: #000000;
+            --black-accent: #ffffff;
+            --grey-border: #3a3a3c;
+            --user-msg-bg: #2c2c2e;
+            --panel-bg: #2c2c2e;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            transition: background-color var(--transition-speed), border-color var(--transition-speed);
         }
 
         body {
@@ -37,237 +47,438 @@
             align-items: center;
             height: 100vh;
             padding: 20px;
+            overflow: hidden;
         }
 
-        /* Главный контейнер — теперь только для чата */
         .chat-wrapper {
             width: 100%;
-            max-width: 1000px;
-            height: 85vh;
+            max-width: 900px;
+            height: 90vh;
             display: flex;
             flex-direction: column;
             gap: 16px;
-            /* РАЗДЕЛЕНИЕ МЕЖДУ ЧАТОМ И ВВОДОМ */;
         }
 
-        /* Закругленный контейнер для сообщений */
         .chat-container {
             flex: 1;
             background: var(--chat-bg);
-            border-radius: 20px;
+            border-radius: 24px;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
             overflow: hidden;
             border: 1px solid var(--grey-border);
+            position: relative;
             min-height: 0;
         }
 
-        /* Черный заголовок с закруглениями */
+        /* Шапка с кнопками управления */
         .chat-header {
             background: var(--black-accent);
             color: var(--text-light);
-            padding: 20px;
-            font-weight: 700;
-            text-align: center;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
             font-size: 1.1em;
-            letter-spacing: -0.5px;
-            border-radius: 20px;
+            letter-spacing: -0.3px;
+            z-index: 10;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            color: inherit;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        .icon-btn:hover { opacity: 0.7; }
+        .icon-btn:active { transform: scale(0.95); }
+
+        /* Выпадающая панель настроек */
+        .settings-panel {
+            position: absolute;
+            top: -200px;
+            left: 0;
+            width: 100%;
+            background: var(--panel-bg);
+            border-bottom: 1px solid var(--grey-border);
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 5;
+            transition: top var(--transition-speed) cubic-bezier(0.1, 0.8, 0.25, 1);
+        }
+        .settings-panel.open { top: 56px; }
+
+        .settings-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .settings-field label {
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .settings-field textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--grey-border);
+            background: var(--chat-bg);
+            color: var(--text-dark);
+            outline: none;
+            font-size: 14px;
         }
 
         /* Окно сообщений */
         #chat-window {
             flex: 1;
-            padding: 25px;
+            padding: 24px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 16px;
             background: var(--chat-bg);
             scroll-behavior: smooth;
         }
 
-        /* Стили сообщений (закругленные "пузыри") */
         .msg {
             padding: 14px 18px;
             font-size: 15px;
             line-height: 1.5;
-            max-width: 80%;
+            max-width: 75%;
             word-wrap: break-word;
-            animation: bubblePop 0.3s ease;
+            animation: bubblePop 0.25s cubic-bezier(0.1, 0.8, 0.25, 1);
+            position: relative;
         }
 
         @keyframes bubblePop {
-            from {
-                opacity: 0;
-                transform: scale(0.9) translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
+            from { opacity: 0; transform: scale(0.96) translateY(8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         .user-msg {
             align-self: flex-end;
             background: var(--black-accent);
-            /* Черный "пузырь" для пользователя */
             color: var(--text-light);
             border-radius: 20px 20px 4px 20px;
-            /* Асимметричное закругление */
         }
 
         .ai-msg {
             align-self: flex-start;
             background: var(--user-msg-bg);
-            /* Бело-серый "пузырь" для ИИ */
             color: var(--text-dark);
             border-radius: 20px 20px 20px 4px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
         }
 
-        /* Оформление Markdown внутри ИИ ответов */
-        .ai-msg p {
-            margin-bottom: 8px;
-        }
+        /* Оформление Markdown и Кнопка Копирования */
+        .ai-msg p { margin-bottom: 10px; }
+        .ai-msg p:last-child { margin-bottom: 0; }
+        
         .ai-msg pre {
-            background: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            padding: 15px;
+            background: #1e1e1e;
+            color: #f8f8f2;
+            padding: 35px 14px 14px 14px;
             border-radius: 12px;
-            margin: 10px 0;
+            margin: 12px 0;
             overflow-x: auto;
             font-size: 13px;
+            position: relative;
         }
+        
         .ai-msg code {
-            font-family: monospace;
+            font-family: SFMono-Regular, Consolas, Menlo, monospace;
+            background: rgba(0,0,0,0.06);
+            padding: 2px 5px;
+            border-radius: 6px;
+            font-size: 0.9em;
         }
-        .ai-msg ul,
-        .ai-msg ol {
-            margin-left: 18px;
-            margin-bottom: 8px;
+        [data-theme="dark"] .ai-msg code { background: rgba(255,255,255,0.1); }
+        .ai-msg pre code { background: none; padding: 0; color: #f8f8f2; }
+
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #f8f8f2;
+            border: none;
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .copy-btn:hover { background: rgba(255, 255, 255, 0.2); }
+
+        /* Анимация точек загрузки */
+        .loading-dots { display: flex; gap: 5px; padding: 6px 0; }
+        .loading-dots span {
+            width: 8px;
+            height: 8px;
+            background: #8e8e93;
+            border-radius: 50%;
+            animation: pulse 1.4s infinite ease-in-out both;
+        }
+        .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes pulse {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
+            40% { transform: scale(1); opacity: 1; }
         }
 
-        /* ОТДЕЛЬНЫЙ КОНТЕЙНЕР ДЛЯ ВВОДА */
+        /* Зона ввода */
         .input-container {
             flex-shrink: 0;
             background: var(--black-accent);
-            /* Черная вставка */
-            border-radius: 20px;
-            padding: 30px 20px 30px 20px;
+            border-radius: 24px;
+            padding: 12px 16px;
             display: flex;
-            align-items: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-            
+            align-items: flex-end;
         }
 
-        input {
+        textarea {
             flex: 1;
             background: #ffffff;
-            /* Белое поле ввода */
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 14px 20px;
-            border-radius: 20px;
-            /* Сильное закругление ввода */
+            border: none;
+            padding: 12px 16px;
+            border-radius: 16px;
             outline: none;
             font-size: 15px;
             color: #000000;
-            transition: border 0.3s;
+            font-family: var(--font-family);
+            resize: none;
+            max-height: 150px;
+            height: 44px;
+            line-height: 1.4;
         }
+        textarea:disabled { background: #f5f5f7; color: #8e8e93; }
 
-        input:focus {
-            border: 1px solid rgba(255, 255, 255, 0.5);
-        }
-        input::placeholder {
-            color: rgba(0, 0, 0, 0.61);
-        }
-
-        /* Белая контрастная кнопка */
-        button {
+        .send-btn {
             background: var(--chat-bg);
             color: var(--black-accent);
             border: none;
             padding: 0 20px;
             margin-left: 10px;
-            border-radius: 25px;
+            border-radius: 16px;
             cursor: pointer;
             font-weight: 600;
             font-size: 14px;
-            height: 46px;
-            transition: background 0.3s;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
         }
-
-        button:hover {
-            background: #d2d2d7;
-        }
-        button:active {
-            background: #000000;
-            color: #ffffff;
-        }
-
-        .loading {
-            font-style: italic;
-            opacity: 0.7;
-        }
+        .send-btn:hover:not(:disabled) { background: #d2d2d7; }
+        .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
-    <!-- ОБЩАЯ ОБЕРТКА ДЛЯ ЧАТА И ВВОДА, НО ОНИ В РАЗНЫХ ДИВАХ -->
     <div class="chat-wrapper">
-
-        <!-- ЧАТ КОНТЕЙНЕР (СООБЩЕНИЯ + ЗАГОЛОВОК) -->
         <div class="chat-container">
-            <div class="chat-header">Zephyr.AI</div>
-            <div id="chat-window">
-                <div class="msg ai-msg">Привет! Чем я могу помочь тебе сегодня?</div>
+            
+            <div class="chat-header">
+                <span id="brand-title">Zephyr.AI Pro</span>
+                <div class="header-controls">
+                    <button class="icon-btn" onclick="toggleTheme()" title="Сменить тему">🌓</button>
+                    <button class="icon-btn" onclick="clearChat()" title="Очистить диалог">🗑️</button>
+                    <button class="icon-btn" onclick="toggleSettings()" title="Настройки ИИ">⚙️</button>
+                </div>
             </div>
+
+            <div id="settings-panel" class="settings-panel">
+                <div class="settings-field">
+                    <label>Системная инструкция</label>
+                    <textarea id="system-prompt-input" style="height: 80px;" placeholder="Например: Ты Senior Python разработчик. Отвечай кратко." onchange="saveSettings()"></textarea>
+                </div>
+            </div>
+
+            <div id="chat-window"></div>
         </div>
 
-        <!-- ОТДЕЛЬНЫЙ КОНТЕЙНЕР ДЛЯ ВВОДА -->
         <div class="input-container">
-            <input type="text" id="user-input" placeholder="Введите ваш запрос..." autocomplete="off">
-            <button onclick="sendMessage()">Отправить</button>
+            <textarea id="user-input" placeholder="Задайте вопрос (Enter — отправить, Shift+Enter — перенос)..." rows="1"></textarea>
+            <button id="send-btn" class="send-btn" onclick="sendMessage()">Отправить</button>
         </div>
-
     </div>
 
     <script>
-        const API_KEY = "AIzaSyABROaQw6r2Pm-S_FmASq2qaEyWcvDtbgc";
-        const URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+        // === ВСТАВЬ СВОЙ КЛЮЧ СЮДА ===
+        const API_KEY = "AIzaSyBfdpQNwT7dEj9r8RC7olO-LjpZS850rp4";
         
+        const URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent";
+        
+        let chatHistory = [];
+        let isGenerating = false;
+
+        window.onload = () => {
+            // Восстанавливаем системный промпт
+            document.getElementById('system-prompt-input').value = localStorage.getItem('zephyr_system_prompt') || '';
+            
+            // Восстанавливаем тему
+            const savedTheme = localStorage.getItem('zephyr_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+
+            // Восстанавливаем историю
+            const savedHistory = localStorage.getItem('zephyr_history');
+            if (savedHistory) {
+                chatHistory = JSON.parse(savedHistory);
+                renderHistory();
+            } else {
+                showGreeting();
+            }
+
+            const tx = document.getElementById('user-input');
+            tx.addEventListener('input', autoResizeTextarea);
+            tx.addEventListener('keydown', handleKeyDown);
+        };
+
+        function saveSettings() {
+            localStorage.setItem('zephyr_system_prompt', document.getElementById('system-prompt-input').value.trim());
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('zephyr_theme', newTheme);
+        }
+
+        function toggleSettings() {
+            document.getElementById('settings-panel').classList.toggle('open');
+        }
+
+        function autoResizeTextarea() {
+            this.style.height = '44px';
+            this.style.height = (this.scrollHeight) + 'px';
+        }
+
+        function handleKeyDown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function showGreeting() {
+            const chatWindow = document.getElementById('chat-window');
+            chatWindow.innerHTML = `<div class="msg ai-msg">Привет! Я готов к работе на базе Gemini 3.1 Flash-Lite. Мой API-ключ настроен внутри файла. Спросите меня о чём угодно!</div>`;
+        }
+
+        function renderHistory() {
+            const chatWindow = document.getElementById('chat-window');
+            chatWindow.innerHTML = '';
+            
+            if (chatHistory.length === 0) {
+                showGreeting();
+                return;
+            }
+
+            chatHistory.forEach(msg => {
+                const msgDiv = document.createElement('div');
+                if (msg.role === 'user') {
+                    msgDiv.className = 'msg user-msg';
+                    msgDiv.textContent = msg.parts[0].text;
+                } else {
+                    msgDiv.className = 'msg ai-msg';
+                    msgDiv.innerHTML = marked.parse(msg.parts[0].text);
+                    addCopyButtons(msgDiv);
+                }
+                chatWindow.appendChild(msgDiv);
+            });
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function addCopyButtons(container) {
+            const preBlocks = container.querySelectorAll('pre');
+            preBlocks.forEach(pre => {
+                const button = document.createElement('button');
+                button.className = 'copy-btn';
+                button.innerText = 'Копировать';
+                
+                button.addEventListener('click', () => {
+                    const codeText = pre.querySelector('code')?.innerText || pre.innerText;
+                    navigator.clipboard.writeText(codeText).then(() => {
+                        button.innerText = 'Скопировано!';
+                        setTimeout(() => button.innerText = 'Копировать', 2000);
+                    });
+                });
+                pre.appendChild(button);
+            });
+        }
+
         async function sendMessage() {
+            if (!API_KEY || API_KEY === "СЮДА_ВСТАВЬ_СВОЙ_API_КЛЮЧ") {
+                alert('Пожалуйста, откройте ваш HTML-файл в текстовом редакторе и укажите ваш API-ключ в переменной API_KEY на строке 233.');
+                return;
+            }
+
             const input = document.getElementById('user-input');
+            const sendBtn = document.getElementById('send-btn');
             const chatWindow = document.getElementById('chat-window');
             const text = input.value.trim();
 
-            if (!text) return;
+            if (!text || isGenerating) return;
 
-            // Добавляем сообщение пользователя (Черное)
-            chatWindow.innerHTML += `<div class="msg user-msg">${text}</div>`;
+            document.getElementById('settings-panel').classList.remove('open');
+
+            isGenerating = true;
+            input.disabled = true;
+            sendBtn.disabled = true;
+
+            if (chatHistory.length === 0) chatWindow.innerHTML = '';
+
+            const userMsgDiv = document.createElement('div');
+            userMsgDiv.className = 'msg user-msg';
+            userMsgDiv.textContent = text;
+            chatWindow.appendChild(userMsgDiv);
+            
             input.value = "";
+            input.style.height = '44px';
             chatWindow.scrollTop = chatWindow.scrollHeight;
 
-            // Создаем временный пузырь для ИИ
+            chatHistory.push({ role: "user", parts: [{ text: text }] });
+            localStorage.setItem('zephyr_history', JSON.stringify(chatHistory));
+
             const aiMsgDiv = document.createElement('div');
-            aiMsgDiv.className = 'msg ai-msg loading';
-            aiMsgDiv.innerText = "Формирую ответ...";
+            aiMsgDiv.className = 'msg ai-msg';
+            aiMsgDiv.innerHTML = `<div class="loading-dots"><span></span><span></span><span></span></div>`;
             chatWindow.appendChild(aiMsgDiv);
             chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            const sysPrompt = localStorage.getItem('zephyr_system_prompt');
+            const requestBody = { contents: chatHistory };
+            
+            if (sysPrompt) {
+                requestBody.systemInstruction = { parts: [{ text: sysPrompt }] };
+            }
 
             try {
                 const response = await fetch(`${URL}?key=${API_KEY}`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{
-                                text: text
-                            }]
-                        }]
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
                 });
 
                 const data = await response.json();
@@ -275,23 +486,34 @@
 
                 const rawAiText = data.candidates[0].content.parts[0].text;
 
-                // Рендерим Markdown
-                aiMsgDiv.classList.remove('loading');
+                chatHistory.push({ role: "model", parts: [{ text: rawAiText }] });
+                localStorage.setItem('zephyr_history', JSON.stringify(chatHistory));
+
                 aiMsgDiv.innerHTML = marked.parse(rawAiText);
+                addCopyButtons(aiMsgDiv);
 
             } catch (error) {
-                aiMsgDiv.classList.remove('loading');
-                aiMsgDiv.style.color = "#ff3b30"; // Премиальный красный
-                aiMsgDiv.innerText = "Произошла ошибка соединения.";
+                console.error(error);
+                aiMsgDiv.style.color = "#ff3b30";
+                aiMsgDiv.innerText = "Ошибка запроса. Проверьте правильность API-ключа в коде и консоль браузера.";
+                chatHistory.pop();
+                localStorage.setItem('zephyr_history', JSON.stringify(chatHistory));
+            } finally {
+                isGenerating = false;
+                input.disabled = false;
+                sendBtn.disabled = false;
+                input.focus();
+                chatWindow.scrollTop = chatWindow.scrollHeight;
             }
-
-            chatWindow.scrollTop = chatWindow.scrollHeight;
         }
 
-        // Отправка по нажатию Enter
-        document.getElementById('user-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
+        function clearChat() {
+            if (confirm("Вы уверены, что хотите полностью очистить историю диалога?")) {
+                chatHistory = [];
+                localStorage.removeItem('zephyr_history');
+                renderHistory();
+            }
+        }
     </script>
 </body>
 </html>

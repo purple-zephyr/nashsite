@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивный 2.5D Движок (Raycasting)</title>
+    <!-- Подключаем Tailwind CSS для красивого футуристического интерфейса -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #e2e8f0;
+        }
+        .retro-font {
+            font-family: 'Share Tech Mono', monospace;
+        }
+        /* Убираем выделение текста на мобильных устройствах при тапах по кнопкам */
+        .no-select {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between overflow-x-hidden pb-6">
+
+<header class="bg-slate-900 border-b border-red-900/40 p-4 text-center shadow-lg shadow-red-950/20">
+    <h1 class="text-2xl md:text-3xl font-extrabold text-red-500 tracking-wider retro-font uppercase">
+        JS 2.5D Raycaster Engine
+    </h1>
+    <p class="text-xs md:text-sm text-slate-400 mt-1">
+        Как устроен первый Doom: интерактивная демонстрация работы лучей в реальном времени
+    </p>
+</header>
+
+<main class="max-w-6xl w-full mx-auto px-4 py-6 flex-grow flex flex-col gap-6">
+    <!-- Блок с описанием математики и механики -->
+    <section class="bg-slate-900/80 border border-slate-800 p-4 rounded-xl text-sm leading-relaxed">
+        <h2 class="text-red-400 font-bold mb-2 retro-font text-base uppercase">Принцип работы движка:</h2>
+        <ul class="list-disc pl-5 space-y-1 text-slate-300">
+            <li><strong>2D Карта (слева):</strong> Игрок выпускает веер лучей (FOV = 60°). Лучи летят вперед, пока не пересекут стену.</li>
+            <li><strong>DDA Алгоритм:</strong> Компьютер пошагово проверяет пересечения луча с сеткой карты, измеряя расстояние.</li>
+            <li><strong>3D Рендеринг (справа):</strong> Чем ближе стена к игроку (короче луч), тем выше рисуется вертикальная полоса на экране.</li>
+            <li><span class="text-amber-400 font-semibold">Интерактив:</span> Кликайте по клеткам 2D-карты, чтобы строить/разрушать стены в реальном времени!</li>
+        </ul>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <!-- Левая панель: 2D Карта -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col items-center">
+            <div class="flex justify-between w-full mb-3 items-center border-b border-slate-800 pb-2">
+                <span class="text-sm font-bold tracking-wider text-red-400 retro-font uppercase">2D Карта (Вид сверху)</span>
+                <span class="text-xs text-slate-400">[Клик по сетке: Редактировать]</span>
+            </div>
+            <div class="relative w-full aspect-square max-w-[400px]">
+                <canvas id="minimap" class="w-full h-full bg-slate-950 rounded-lg border border-slate-700 cursor-pointer shadow-inner"></canvas>
+            </div>
+        </div>
+
+        <!-- Правая панель: 3D Отрендеренный вид -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col items-center">
+            <div class="flex justify-between w-full mb-3 items-center border-b border-slate-800 pb-2">
+                <span class="text-sm font-bold tracking-wider text-red-400 retro-font uppercase">3D Рендеринг (Вид от первого лица)</span>
+                <span id="fps-counter" class="text-xs text-slate-400 retro-font">FPS: --</span>
+            </div>
+            <div class="relative w-full aspect-[4/3] max-w-[480px]">
+                <canvas id="view3d" class="w-full h-full bg-black rounded-lg border border-slate-700 shadow-lg"></canvas>
+                <!-- Спрайт оружия по центру экрана (Doom-стиль) -->
+                <div id="weapon-container" class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/3 pointer-events-none select-none transition-transform duration-75">
+                    <!-- SVG оружия -->
+                    <svg id="weapon-svg" viewBox="0 0 100 100" class="w-full origin-bottom">
+                        <!-- Дуло -->
+                        <rect x="42" y="30" width="16" height="50" fill="#2d3748" stroke="#1a202c" stroke-width="2"/>
+                        <rect x="46" y="25" width="8" height="55" fill="#4a5568"/>
+                        <!-- Корпус оружия -->
+                        <path d="M 30 100 L 40 55 L 60 55 L 70 100 Z" fill="#1a202c" stroke="#10141d" stroke-width="2" />
+                        <!-- Прицел / Мушка -->
+                        <polygon points="50,23 48,27 52,27" fill="#e53e3e" />
+                        <!-- Вспышка выстрела (скрыта по умолчанию) -->
+                        <g id="muzzle-flash" class="hidden">
+                            <circle cx="50" cy="20" r="18" fill="rgba(251, 191, 36, 0.9)"/>
+                            <polygon points="50,0 35,25 65,25" fill="#f59e0b"/>
+                            <polygon points="50,40 25,15 75,15" fill="#ef4444"/>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+        <!-- Панель управления (Инструкция клавиатуры) -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+            <div>
+                <h3 class="font-bold text-red-400 mb-2 retro-font text-sm uppercase">Управление на клавиатуре:</h3>
+                <div class="grid grid-cols-2 gap-2 text-xs text-slate-300">
+                    <div><kbd class="px-2 py-1 bg-slate-800 rounded border border-slate-700 font-bold text-white mr-1">W</kbd> или <kbd>↑</kbd> — Вперед</div>
+                    <div><kbd class="px-2 py-1 bg-slate-800 rounded border border-slate-700 font-bold text-white mr-1">S</kbd> или <kbd>↓</kbd> — Назад</div>
+                    <div><kbd class="px-2 py-1 bg-slate-800 rounded border border-slate-700 font-bold text-white mr-1">A</kbd> или <kbd>←</kbd> — Поворот влево</div>
+                    <div><kbd class="px-2 py-1 bg-slate-800 rounded border border-slate-700 font-bold text-white mr-1">D</kbd> или <kbd>→</kbd> — Поворот вправо</div>
+                </div>
+                <div class="mt-4 text-xs text-slate-300">
+                    <kbd class="px-3 py-1 bg-slate-800 rounded border border-slate-700 font-bold text-white mr-1">Пробел</kbd> или <kbd>Клик по 3D-экрану</kbd> — Выстрелить!
+                </div>
+            </div>
+            
+            <div class="mt-4 pt-3 border-t border-slate-800 flex flex-col gap-4">
+                <div class="flex justify-between items-center">
+                    <label class="text-xs text-slate-400 flex items-center gap-2 cursor-pointer no-select">
+                        <input type="checkbox" id="ray-toggle" checked class="w-4 h-4 accent-red-600 rounded">
+                        Отображать лучи
+                    </label>
+                    <button id="reset-map" class="px-3 py-1 bg-red-950/40 hover:bg-red-900/40 border border-red-800/60 rounded text-red-300 text-xs retro-font transition">
+                        Сбросить карту
+                    </button>
+                </div>
+                
+                <!-- Ползунок FOV -->
+                <div class="flex flex-col gap-2 w-full">
+                    <div class="flex justify-between items-center text-xs text-slate-400 retro-font">
+                        <span class="uppercase text-red-400">Угол обзора (FOV):</span>
+                        <span id="fov-value" class="font-bold text-white text-sm">66°</span>
+                    </div>
+                    <input type="range" id="fov-slider" min="30" max="120" value="66" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-red-600">
+                </div>
+            </div>
+        </div>
+
+        <!-- Виртуальный геймпад для смартфонов -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col items-center justify-center no-select">
+            <h3 class="font-bold text-red-400 mb-3 retro-font text-sm uppercase md:hidden">Сенсорное управление:</h3>
+            <div class="flex gap-4 items-center justify-center w-full">
+                <!-- Кнопки поворота -->
+                <div class="flex flex-col gap-2">
+                    <button id="btn-left" class="w-14 h-14 bg-slate-800 active:bg-red-700/80 border border-slate-700 rounded-xl flex items-center justify-center text-xl text-slate-200 font-bold">←</button>
+                </div>
+                <!-- Кнопки движения вперед/назад -->
+                <div class="flex flex-col gap-2">
+                    <button id="btn-forward" class="w-14 h-14 bg-slate-800 active:bg-red-700/80 border border-slate-700 rounded-xl flex items-center justify-center text-xl text-slate-200 font-bold">↑</button>
+                    <button id="btn-backward" class="w-14 h-14 bg-slate-800 active:bg-red-700/80 border border-slate-700 rounded-xl flex items-center justify-center text-xl text-slate-200 font-bold">↓</button>
+                </div>
+                <!-- Кнопка поворота направо -->
+                <div class="flex flex-col gap-2">
+                    <button id="btn-right" class="w-14 h-14 bg-slate-800 active:bg-red-700/80 border border-slate-700 rounded-xl flex items-center justify-center text-xl text-slate-200 font-bold">→</button>
+                </div>
+                <!-- Кнопка огонь -->
+                <div class="ml-4">
+                    <button id="btn-fire" class="w-16 h-16 bg-red-900 active:bg-red-500 border-2 border-red-600 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-red-950/80 tracking-widest retro-font uppercase">ОГОНЬ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="text-center text-xs text-slate-500 mt-6 border-t border-slate-900 pt-4">
+    JS Raycaster Demo © 2026. Сделано для демонстрации принципов 2.5D движков.
+</footer>
+
+<script>
+// --- ПАРАМЕТРЫ ДВИЖКА ---
+const MAP_WIDTH = 12;
+const MAP_HEIGHT = 12;
+
+// Исходная карта (1 - стена, 0 - пусто)
+let gameMap = [
+    [1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,1,0,0,0,0,1],
+    [1,0,1,1,0,0,1,0,1,1,0,1],
+    [1,0,1,0,0,0,0,0,0,1,0,1],
+    [1,0,0,0,0,1,1,0,0,0,0,1],
+    [1,0,0,0,0,1,1,0,0,0,0,1],
+    [1,1,0,1,1,1,1,1,1,0,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,1,0,0,0,0,1,1,0,1],
+    [1,0,1,0,0,1,1,0,0,1,0,1],
+    [1,0,0,0,0,1,1,0,0,0,0,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1]
+];
+
+// Дефолтная копия карты для сброса
+const DEFAULT_MAP = JSON.parse(JSON.stringify(gameMap));
+
+// Игрок (Переведен на векторную систему камеры для идеального DDA без искажений)
+const player = {
+    x: 2.5,          
+    y: 2.5,          
+    dirX: Math.cos(Math.PI / 4), // Вектор направления взгляда
+    dirY: Math.sin(Math.PI / 4),
+    planeX: -Math.sin(Math.PI / 4) * 0.66, // Вектор плоскости проекции (FOV ~66 градусов)
+    planeY: Math.cos(Math.PI / 4) * 0.66,
+    speed: 0.08,     
+    rotSpeed: 0.045, 
+    radius: 0.2      
+};
+
+// Элементы Canvas
+const minimapCanvas = document.getElementById('minimap');
+const minimapCtx = minimapCanvas.getContext('2d');
+const viewCanvas = document.getElementById('view3d');
+const viewCtx = viewCanvas.getContext('2d');
+
+// Фиксированные разрешения рендеринга
+const resolutionScale = 1; // Коэффициент качества (для оптимизации)
+const viewWidth = 480;
+const viewHeight = 360;
+viewCanvas.width = viewWidth;
+viewCanvas.height = viewHeight;
+
+// Системные переменные
+let keys = {};
+let lastTime = 0;
+let fps = 0;
+let showRays = true;
+let isShooting = false;
+let weaponBobbing = 0; // Для эффекта покачивания оружия
+let flashLight = 0; // Для динамического освещения от выстрела
+
+// --- ГЕНЕРАЦИЯ ПРОЦЕДУРНЫХ ТЕКСТУР ---
+const TEX_WIDTH = 64;
+const TEX_HEIGHT = 64;
+const texCanvas = document.createElement('canvas');
+texCanvas.width = TEX_WIDTH;
+texCanvas.height = TEX_HEIGHT;
+const tCtx = texCanvas.getContext('2d');
+
+function generateWallTexture() {
+    // Базовый фон (металлический лист)
+    tCtx.fillStyle = '#475569';
+    tCtx.fillRect(0, 0, TEX_WIDTH, TEX_HEIGHT);
+    
+    // Ржавчина и шум
+    for(let i = 0; i < 800; i++) {
+        tCtx.fillStyle = Math.random() > 0.5 ? '#334155' : '#64748b';
+        tCtx.fillRect(Math.floor(Math.random() * TEX_WIDTH), Math.floor(Math.random() * TEX_HEIGHT), 2, 2);
+    }
+
+    // Края панели (рамка)
+    tCtx.strokeStyle = '#1e293b';
+    tCtx.lineWidth = 4;
+    tCtx.strokeRect(0, 0, TEX_WIDTH, TEX_HEIGHT);
+    
+    // Внутренняя фаска
+    tCtx.strokeStyle = '#94a3b8';
+    tCtx.lineWidth = 2;
+    tCtx.strokeRect(4, 4, TEX_WIDTH - 8, TEX_HEIGHT - 8);
+    
+    // Заклепки по углам
+    tCtx.fillStyle = '#0f172a';
+    [8, TEX_WIDTH - 8].forEach(x => {
+        [8, TEX_HEIGHT - 8].forEach(y => {
+            tCtx.beginPath(); tCtx.arc(x, y, 2.5, 0, Math.PI*2); tCtx.fill();
+        });
+    });
+    
+    // Вентиляционная решетка
+    tCtx.fillStyle = '#0f172a';
+    for(let y = 20; y < TEX_HEIGHT - 20; y += 6) {
+        tCtx.fillRect(16, y, TEX_WIDTH - 32, 3);
+    }
+}
+generateWallTexture();
+
+// Настройка кнопок тач-управления (для мобильных)
+let touchControls = {
+    forward: false,
+    backward: false,
+    left: false,
+    right: false
+};
+
+// --- СИНТЕЗАТОР ЗВУКА ВЫСТРЕЛА (Web Audio API) ---
+function playSynthShot() {
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        
+        // Создаем белый шум для взрывного эффекта пороха
+        const bufferSize = ctx.sampleRate * 0.25; // Длительность 0.25 сек
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+        
+        const noiseNode = ctx.createBufferSource();
+        noiseNode.buffer = buffer;
+        
+        // Низкочастотный фильтр для плотности звука
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1000, ctx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.2);
+        
+        // Управление громкостью (огибающая затухания)
+        const gainNode = ctx.createGain();
+        gainNode.gain.setValueAtTime(0.4, ctx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.24);
+        
+        noiseNode.connect(filter);
+        filter.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        
+        noiseNode.start();
+        
+        // Добавим металлический лязг (высокочастотный синусоидальный пик)
+        const osc = ctx.createOscillator();
+        const oscGain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(150, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.15);
+        
+        oscGain.gain.setValueAtTime(0.3, ctx.currentTime);
+        oscGain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+        
+        osc.connect(oscGain);
+        oscGain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.16);
+        
+    } catch (e) {
+        console.warn("Audio Context не поддерживается или заблокирован браузером");
+    }
+}
+
+// --- STREAMING_CHUNK: Implementing collision detection and movement physics ---
+function isWall(x, y) {
+    if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) return true;
+    return gameMap[Math.floor(y)][Math.floor(x)] > 0;
+}
+
+// Перемещение с проверкой коллизий (упрощенная модель скольжения вдоль стен)
+function movePlayer(dx, dy) {
+    let newX = player.x + dx;
+    let newY = player.y + dy;
+    
+    // Проверка столкновения по оси X
+    if (!isWall(newX + (dx > 0 ? player.radius : -player.radius), player.y)) {
+        player.x = newX;
+    }
+    // Проверка столкновения по оси Y
+    if (!isWall(player.x, newY + (dy > 0 ? player.radius : -player.radius))) {
+        player.y = newY;
+    }
+}
+
+// Обработка ввода
+function handleInput() {
+    let moveStep = 0;
+    let rotStep = 0;
+
+    // Клавиатура или сенсорный геймпад
+    if (keys['KeyW'] || keys['ArrowUp'] || touchControls.forward) {
+        moveStep = player.speed;
+    }
+    if (keys['KeyS'] || keys['ArrowDown'] || touchControls.backward) {
+        moveStep = -player.speed;
+    }
+    if (keys['KeyA'] || keys['ArrowLeft'] || touchControls.left) {
+        rotStep = -player.rotSpeed;
+    }
+    if (keys['KeyD'] || keys['ArrowRight'] || touchControls.right) {
+        rotStep = player.rotSpeed;
+    }
+
+    // Применяем вращение (Матрица поворота для векторов)
+    if (rotStep !== 0) {
+        const oldDirX = player.dirX;
+        player.dirX = player.dirX * Math.cos(rotStep) - player.dirY * Math.sin(rotStep);
+        player.dirY = oldDirX * Math.sin(rotStep) + player.dirY * Math.cos(rotStep);
+        
+        const oldPlaneX = player.planeX;
+        player.planeX = player.planeX * Math.cos(rotStep) - player.planeY * Math.sin(rotStep);
+        player.planeY = oldPlaneX * Math.sin(rotStep) + player.planeY * Math.cos(rotStep);
+    }
+
+    // Применяем движение
+    if (moveStep !== 0) {
+        let dx = player.dirX * moveStep;
+        let dy = player.dirY * moveStep;
+        movePlayer(dx, dy);
+        
+        // Качание оружия при ходьбе
+        weaponBobbing += 0.25;
+        const bobX = Math.sin(weaponBobbing) * 8;
+        const bobY = Math.abs(Math.cos(weaponBobbing)) * 6;
+        document.getElementById('weapon-svg').style.transform = `translate(${bobX}px, ${bobY}px)`;
+    } else {
+        // Оружие возвращается в центр, когда стоим
+        document.getElementById('weapon-svg').style.transform = `translate(0px, 0px)`;
+    }
+}
+
+// Функция стрельбы
+function triggerShoot() {
+    if (isShooting) return;
+    isShooting = true;
+    
+    playSynthShot();
+    
+    const flash = document.getElementById('muzzle-flash');
+    const weapon = document.getElementById('weapon-svg');
+    
+    // Показываем вспышку и делаем сильную отдачу
+    flash.classList.remove('hidden');
+    weapon.style.transform = `translateY(25px) scale(0.95)`;
+    
+    // Добавляем ослепительную вспышку света в коридоре!
+    flashLight = 1.0; 
+
+    setTimeout(() => {
+        flash.classList.add('hidden');
+        weapon.style.transform = `translateY(0px) scale(1)`;
+        isShooting = false;
+    }, 120);
+}
+
+// --- STREAMING_CHUNK: Rendering the 2D Minimap and visual rays ---
+function drawMinimap() {
+    // Подгоняем внутреннее разрешение канваса под CSS-размер
+    const size = minimapCanvas.clientWidth;
+    if (minimapCanvas.width !== size) {
+        minimapCanvas.width = size;
+        minimapCanvas.height = size;
+    }
+
+    const cellWidth = minimapCanvas.width / MAP_WIDTH;
+    const cellHeight = minimapCanvas.height / MAP_HEIGHT;
+
+    minimapCtx.clearRect(0, 0, minimapCanvas.width, minimapCanvas.height);
+
+    // Рисуем сетку карты
+    for (let y = 0; y < MAP_HEIGHT; y++) {
+        for (let x = 0; x < MAP_WIDTH; x++) {
+            if (gameMap[y][x] > 0) {
+                // Стена
+                minimapCtx.fillStyle = '#334155';
+                minimapCtx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                // Фаска/рамка блока
+                minimapCtx.strokeStyle = '#475569';
+                minimapCtx.strokeRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+            } else {
+                // Пустое пространство
+                minimapCtx.fillStyle = '#0f172a';
+                minimapCtx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                // Легкая сетка
+                minimapCtx.strokeStyle = '#1e293b';
+                minimapCtx.strokeRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+            }
+        }
+    }
+
+    // Рисуем игрока
+    const px = player.x * cellWidth;
+    const py = player.y * cellHeight;
+    
+    minimapCtx.fillStyle = '#ef4444';
+    minimapCtx.beginPath();
+    minimapCtx.arc(px, py, 6, 0, Math.PI * 2);
+    minimapCtx.fill();
+
+    // Рисуем вектор направления
+    minimapCtx.strokeStyle = '#f59e0b';
+    minimapCtx.lineWidth = 2;
+    minimapCtx.beginPath();
+    minimapCtx.moveTo(px, py);
+    minimapCtx.lineTo(px + player.dirX * 15, py + player.dirY * 15);
+    minimapCtx.stroke();
+    
+    // Рисуем плоскость проекции камеры (визуально объясняет отсутствие "рыбьего глаза")
+    minimapCtx.strokeStyle = '#38bdf8';
+    minimapCtx.lineWidth = 1;
+    minimapCtx.beginPath();
+    minimapCtx.moveTo(px + player.dirX * 15 - player.planeX * 15, py + player.dirY * 15 - player.planeY * 15);
+    minimapCtx.lineTo(px + player.dirX * 15 + player.planeX * 15, py + player.dirY * 15 + player.planeY * 15);
+    minimapCtx.stroke();
+}
+
+// --- STREAMING_CHUNK: Core Raycasting & 3D Rendering (DDA Algorithm) ---
+function render3DAndRays() {
+    // Высота покачивания головы (камеры) при ходьбе
+    let pitch = Math.sin(weaponBobbing) * 8; 
+
+    // Очистка 3D Canvas + Градиенты
+    // Потолок с эффектом глубины
+    let skyGradient = viewCtx.createLinearGradient(0, 0, 0, viewHeight / 2 + pitch);
+    skyGradient.addColorStop(0, '#050b14'); // Темный зенит
+    skyGradient.addColorStop(1, '#1e293b'); // Более светлый у горизонта
+    viewCtx.fillStyle = skyGradient;
+    viewCtx.fillRect(0, 0, viewWidth, viewHeight / 2 + pitch + 1);
+
+    // Пол с эффектом затухания
+    let floorGradient = viewCtx.createLinearGradient(0, viewHeight / 2 + pitch, 0, viewHeight);
+    floorGradient.addColorStop(0, '#0a0a0a'); // Темный горизонт
+    floorGradient.addColorStop(1, '#292524'); // Светлее у ног
+    viewCtx.fillStyle = floorGradient;
+    viewCtx.fillRect(0, viewHeight / 2 + pitch, viewWidth, viewHeight - (viewHeight / 2 + pitch));
+
+    const cellWidth = minimapCanvas.width / MAP_WIDTH;
+    const cellHeight = minimapCanvas.height / MAP_HEIGHT;
+
+    // Считаем шаг для прохода по пикселям экрана
+    for (let col = 0; col < viewWidth; col++) {
+        // Координата X в пространстве камеры (от -1 до 1)
+        let cameraX = 2 * col / viewWidth - 1; 
+        
+        // Вектор текущего луча (прямая интерполяция по плоскости камеры — идеально ровные стены!)
+        let rayDirX = player.dirX + player.planeX * cameraX;
+        let rayDirY = player.dirY + player.planeY * cameraX;
+        
+        let mapX = Math.floor(player.x);
+        let mapY = Math.floor(player.y);
+        
+        let sideDistX, sideDistY;
+        
+        // Защита от деления на ноль
+        let deltaDistX = (rayDirX === 0) ? 1e30 : Math.abs(1 / rayDirX);
+        let deltaDistY = (rayDirY === 0) ? 1e30 : Math.abs(1 / rayDirY);
+        let perpWallDist;
+        
+        let stepX, stepY;
+        let hit = 0;
+        let side = 0; 
+        
+        // Шаг и начальное расстояние
+        if (rayDirX < 0) {
+            stepX = -1;
+            sideDistX = (player.x - mapX) * deltaDistX;
+        } else {
+            stepX = 1;
+            sideDistX = (mapX + 1.0 - player.x) * deltaDistX;
+        }
+        if (rayDirY < 0) {
+            stepY = -1;
+            sideDistY = (player.y - mapY) * deltaDistY;
+        } else {
+            stepY = 1;
+            sideDistY = (mapY + 1.0 - player.y) * deltaDistY;
+        }
+        
+        // DDA Трассировка
+        while (hit === 0) {
+            if (sideDistX < sideDistY) {
+                sideDistX += deltaDistX;
+                mapX += stepX;
+                side = 0;
+            } else {
+                sideDistY += deltaDistY;
+                mapY += stepY;
+                side = 1;
+            }
+            if (mapX < 0 || mapX >= MAP_WIDTH || mapY < 0 || mapY >= MAP_HEIGHT) break;
+            if (gameMap[mapY][mapX] > 0) hit = gameMap[mapY][mapX];
+        }
+        
+        // Дистанция без эффекта рыбьего глаза (сразу считается правильно благодаря cameraX)
+        if (side === 0) perpWallDist = (sideDistX - deltaDistX);
+        else            perpWallDist = (sideDistY - deltaDistY);
+        
+        if (perpWallDist < 0.01) perpWallDist = 0.01;
+
+        // Рисуем лучи на мини-карте
+        if (showRays && col % 8 === 0) {
+            minimapCtx.strokeStyle = 'rgba(239, 68, 68, 0.15)';
+            minimapCtx.lineWidth = 1;
+            minimapCtx.beginPath();
+            minimapCtx.moveTo(player.x * cellWidth, player.y * cellHeight);
+            minimapCtx.lineTo((player.x + rayDirX * perpWallDist) * cellWidth, (player.y + rayDirY * perpWallDist) * cellHeight);
+            minimapCtx.stroke();
+        }
+
+        // --- РИСОВАНИЕ СТЕН (НАЛОЖЕНИЕ ТЕКСТУР) ---
+        const wallStripHeight = Math.floor(viewHeight / perpWallDist);
+        let drawStart = -wallStripHeight / 2 + viewHeight / 2 + pitch;
+        let drawEnd = wallStripHeight / 2 + viewHeight / 2 + pitch;
+
+        // Вычисляем, куда именно на стену попал луч (координата X текстуры)
+        let wallX;
+        if (side === 0) wallX = player.y + perpWallDist * rayDirY;
+        else            wallX = player.x + perpWallDist * rayDirX;
+        wallX -= Math.floor(wallX);
+        
+        let texX = Math.floor(wallX * TEX_WIDTH);
+        if (side === 0 && rayDirX > 0) texX = TEX_WIDTH - texX - 1;
+        if (side === 1 && rayDirY < 0) texX = TEX_WIDTH - texX - 1;
+
+        // Отрисовка вертикальной полосы текстуры прямо с canvas-в-canvas (очень быстро!)
+        viewCtx.drawImage(
+            texCanvas, 
+            texX, 0, 1, TEX_HEIGHT, // Откуда берем полоску
+            col, drawStart, 1, wallStripHeight // Куда растягиваем
+        );
+
+        // --- ДИНАМИЧЕСКОЕ ОСВЕЩЕНИЕ И ТЕНИ ---
+        let shadow = Math.min(1.0, perpWallDist / 12); // Затухание света вдаль (туман)
+        if (side === 1) shadow = Math.min(1.0, shadow + 0.35); // Стены по оси Y искусственно затемняем для объема
+        
+        // Вспышка от выстрела освещает стены
+        if (flashLight > 0) {
+            let lightPower = flashLight * Math.max(0, 1 - perpWallDist / 8);
+            shadow = Math.max(0, shadow - lightPower);
+        }
+
+        // Накладываем черный полупрозрачный слой тени поверх текстуры
+        if (shadow > 0) {
+            viewCtx.fillStyle = `rgba(0, 0, 0, ${shadow})`;
+            // Ограничиваем заливку границами экрана, чтобы не тратить ресурсы
+            let rStart = Math.max(0, drawStart);
+            let rEnd = Math.min(viewHeight, drawEnd);
+            viewCtx.fillRect(col, rStart, 1, rEnd - rStart);
+        }
+    }
+}
+
+// --- STREAMING_CHUNK: User interaction, map editing, and game loop initialization ---
+// Интерактивное редактирование карты по клику мыши
+minimapCanvas.addEventListener('mousedown', function(e) {
+    const rect = minimapCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Переводим пиксели в координаты сетки
+    const gridX = Math.floor((x / minimapCanvas.clientWidth) * MAP_WIDTH);
+    const gridY = Math.floor((y / minimapCanvas.clientHeight) * MAP_HEIGHT);
+    
+    // Не даем удалить внешние стены, чтобы игрок не выпал за пределы мира
+    if (gridX > 0 && gridX < MAP_WIDTH - 1 && gridY > 0 && gridY < MAP_HEIGHT - 1) {
+        // Переключаем стену (была стена -> стал проход, и наоборот)
+        gameMap[gridY][gridX] = gameMap[gridY][gridX] === 0 ? 1 : 0;
+    }
+});
+
+// Клик по 3D экрану — выстрел
+viewCanvas.addEventListener('mousedown', function() {
+    triggerShoot();
+});
+
+// Обработчики клавиатуры
+window.addEventListener('keydown', function(e) {
+    keys[e.code] = true;
+    if (e.code === 'Space') {
+        e.preventDefault();
+        triggerShoot();
+    }
+});
+window.addEventListener('keyup', function(e) {
+    keys[e.code] = false;
+});
+
+// Переключатель лучей на мини-карте
+document.getElementById('ray-toggle').addEventListener('change', function(e) {
+    showRays = e.target.checked;
+});
+
+// Изменение угла обзора (FOV)
+document.getElementById('fov-slider').addEventListener('input', function(e) {
+    const fovDegrees = parseFloat(e.target.value);
+    document.getElementById('fov-value').innerText = `${Math.round(fovDegrees)}°`;
+    
+    // Переводим градусы в длину вектора плоскости проекции (через тангенс половины угла)
+    const planeLength = Math.tan((fovDegrees / 2) * Math.PI / 180);
+    
+    // Применяем новую длину вектора, сохраняя текущее направление взгляда
+    // Вектор плоскости всегда перпендикулярен вектору направления (-dirY, dirX)
+    player.planeX = -player.dirY * planeLength;
+    player.planeY = player.dirX * planeLength;
+});
+
+// Сброс карты к дефолтной
+document.getElementById('reset-map').addEventListener('click', function() {
+    gameMap = JSON.parse(JSON.stringify(DEFAULT_MAP));
+    player.x = 2.5;
+    player.y = 2.5;
+    player.dirX = Math.cos(Math.PI / 4);
+    player.dirY = Math.sin(Math.PI / 4);
+    
+    // Восстанавливаем плоскость проекции с учетом текущего положения ползунка FOV
+    const fovDegrees = parseFloat(document.getElementById('fov-slider').value);
+    const planeLength = Math.tan((fovDegrees / 2) * Math.PI / 180);
+    player.planeX = -player.dirY * planeLength;
+    player.planeY = player.dirX * planeLength;
+});
+
+// Сенсорное управление на мобильных (Тач эвенты)
+function setupMobileButton(id, controlProp) {
+    const btn = document.getElementById(id);
+    const startEvent = (e) => { e.preventDefault(); touchControls[controlProp] = true; };
+    const endEvent = (e) => { e.preventDefault(); touchControls[controlProp] = false; };
+    
+    btn.addEventListener('touchstart', startEvent, {passive: false});
+    btn.addEventListener('touchend', endEvent, {passive: false});
+    btn.addEventListener('mousedown', () => touchControls[controlProp] = true);
+    btn.addEventListener('mouseup', () => touchControls[controlProp] = false);
+    btn.addEventListener('mouseleave', () => touchControls[controlProp] = false);
+}
+
+setupMobileButton('btn-forward', 'forward');
+setupMobileButton('btn-backward', 'backward');
+setupMobileButton('btn-left', 'left');
+setupMobileButton('btn-right', 'right');
+
+document.getElementById('btn-fire').addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    triggerShoot();
+}, {passive: false});
+document.getElementById('btn-fire').addEventListener('mousedown', function() {
+    triggerShoot();
+});
+
+// --- ГЛАВНЫЙ ИГРОВОЙ ЦИКЛ ---
+function gameLoop(timestamp) {
+    // Расчет кадров в секунду (FPS)
+    if (!lastTime) lastTime = timestamp;
+    const delta = timestamp - lastTime;
+    lastTime = timestamp;
+    fps = Math.round(1000 / delta);
+    document.getElementById('fps-counter').innerText = `FPS: ${fps}`;
+
+    // Затухание вспышки от выстрела с каждым кадром
+    if (flashLight > 0) {
+        flashLight = Math.max(0, flashLight - 0.08);
+    }
+
+    // Движение и логика
+    handleInput();
+
+    // Отрисовка двух миров
+    drawMinimap();
+    render3DAndRays();
+
+    requestAnimationFrame(gameLoop);
+}
+
+// Запуск игры после полной загрузки документа
+window.onload = function() {
+    requestAnimationFrame(gameLoop);
+};
+</script>
+</body>
+</html>

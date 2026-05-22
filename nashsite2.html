@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>НАШ сайт ZZZZ — Сверхтехнологии 2026</title>
+    <style>
+        :root {
+            --bg-color: #0b0813;
+            --card-bg: #161129;
+            --accent-purple: #a855f7;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --neon-glow: 0 0 15px rgba(168, 85, 247, 0.6);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2e1065, #111827);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid var(--accent-purple);
+            box-shadow: var(--neon-glow);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+            text-shadow: var(--neon-glow);
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .stat-badge {
+            background: rgba(255,255,255,0.1);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--accent-purple);
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 30px;
+            flex-grow: 1;
+        }
+
+        @media (max-width: 768px) {
+            .main-container { grid-template-columns: 1fr; }
+        }
+
+        /* Навигационная сетка ссылок */
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .nav-card {
+            background-color: var(--card-bg);
+            border: 1px solid #374151;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-purple);
+            box-shadow: var(--neon-glow);
+            background: linear-gradient(135deg, var(--card-bg), #2e1065);
+        }
+
+        /* Интерактивная игра-кликер */
+        .game-section {
+            background: linear-gradient(135deg, #1e1b4b, #311042);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            border: 2px dashed var(--accent-purple);
+            margin-bottom: 40px;
+        }
+
+        .click-btn {
+            background: linear-gradient(90deg, #ec4899, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+            transition: transform 0.1s, box-shadow 0.3s;
+        }
+
+        .click-btn:active { transform: scale(0.95); }
+        .click-btn:hover { box-shadow: 0 0 25px rgba(236, 72, 153, 0.8); }
+
+        .counter-display {
+            font-size: 3rem;
+            margin: 15px 0;
+            font-weight: 800;
+            color: #10b981;
+            text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        }
+
+        /* Блок рекламы */
+        .ads-sidebar {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #374151;
+            height: fit-content;
+        }
+
+        .ads-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #374151;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .ad-banner {
+            background: #1f2937;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            border-left: 4px solid #ef4444;
+            position: relative;
+        }
+
+        .ad-banner h4 { margin: 0 0 5px 0; color: #f97316; }
+        .ad-banner p { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
+
+        /* Бегущая строка новостей */
+        .news-ticker {
+            background: #000;
+            color: #fff;
+            padding: 10px 0;
+            overflow: hidden;
+            position: relative;
+            border-top: 1px solid #374151;
+        }
+
+        .ticker-wrap {
+            display: flex;
+            width: 100%;
+        }
+
+        .ticker-move {
+            display: inline-block;
+            white-space: nowrap;
+            padding-right: 100%;
+            animation: ticker 45s linear infinite;
+            font-weight: 500;
+        }
+
+        .ticker-item {
+            display: inline-block;
+            padding: 0 2rem;
+            color: #fbbf24;
+        }
+        .ticker-item span { color: #f87171; font-weight: bold; }
+
+        @keyframes ticker {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+
+        /* Виджет Сметанки */
+        .crypto-widget {
+            background: #064e3b;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-family: monospace;
+            margin-bottom: 25px;
+            border: 1px solid #10b981;
+        }
+
+        .shake-reason {
+            background: #7f1d1d;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            margin: 20px 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🟣 НАШ сайт ZZZZ</h1>
+        <div class="stats-container">
+            <div class="stat-badge">Пользователей онлайн: <span id="online-count">Считаем...</span></div>
+            <div class="stat-badge" style="color: #ef4444;">Офлайн: 0</div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <main>
+            <div class="shake-reason">⚠️ ВНИМАНИЕ: причина тряски до сих пор выясняется ведущими аналитиками!</div>
+
+            <h2>Наши Мега-Сервисы</h2>
+            <div class="links-grid">
+                <a href="https://purple-zephyr.github.io/nashsite/" class="nav-card">🏠 Наш Главный Сайт</a>
+                <a href="https://t.me/my_privatdadadade_bot" target="_blank" class="nav-card">🤖 Наш Приватный Бот</a>
+                <a href="leksandr.html" class="nav-card">👨‍💻 Александр</a>
+                <a href="zephyr.ai.html" class="nav-card">🧠 Zephyr AI (Лабы за 5 сек)</a>
+                <a href="ochki.html" class="nav-card">👓 Для слабовидящих</a>
+                <a href="huinya.htm" class="nav-card">🏓 Ракетка</a>
+                <a href="prava.html" class="nav-card">🚗 Купить права ГИБДД</a>
+                <a href="petmatch.html" class="nav-card">🐶 Pet Match</a>
+                <a href="schema5_podgotovka_kak_est.html" class="nav-card">📊 Арис Онлайн</a>
+                <a href="komputer.html" class="nav-card">💻 Мой Компьютер</a>
+                <a href="vibe.html" class="nav-card">🎵 Кнопка Вайба</a>
+                <a href="01001100.html" class="nav-card">📟 Код 01001100</a>
+            </div>
+
+            <div class="game-section">
+                <h3>🎰 АКЦИЯ: Набери 100 кликов и выиграй Автомобиль LADA Aura!</h3>
+                <div class="counter-display" id="click-counter">0</div>
+                <button class="click-btn" id="click-me-btn">ЖМЯКНУТЬ!</button>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 15px;">*Нажимая кнопку, вы соглашаетесь на передачу души ИИ-деду.</p>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; border-left: 5px solid #a855f7;">
+                <h3>🤖 Gemini Dickpic Clade Super AI</h3>
+                <p>Самый лучший и мощный искусственный интеллект для быстрого закрытия лабораторных работ в ночь перед дедлайном. Версия 19.1-Ultra.</p>
+            </div>
+        </main>
+
+        <aside>
+            <div class="crypto-widget">
+                📈 СМЕТАНКА 19+ (USDT)<br>
+                <span id="crypto-val" style="font-size: 1.4rem; color: #34d399; font-weight: bold;">1200.43$</span> ▲
+            </div>
+
+            <div class="ads-sidebar" id="ads-block">
+                <div class="ads-header">
+                    <span style="font-size: 0.8rem; letter-spacing: 1px; color: var(--text-muted);">СПОНСОРСКИЙ КОНТЕНТ</span>
+                    <button onclick="document.getElementById('ads-block').style.opacity='0.2'" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold;">[×]</button>
+                </div>
+                
+                <div class="ad-banner">
+                    <h4>🎰 DIMAS BET & CASINO</h4>
+                    <p>Подними бабла на лабу! Бонус 500% при вводе промокода "ASSEMBLER".</p>
+                </div>
+                <div class="ad-banner" style="border-left-color: #3b82f6;">
+                    <h4>👑 NASHSITE PREMIUM</h4>
+                    <p>Отключи рекламу за 100 Сметанок в секунду.</p>
+                </div>
+                <div class="ad-banner" style="border-left-color: #eab308;">
+                    <h4>💛 1С:Бухгалтерия 5.0</h4>
+                    <p>Лицензионные подарки и автоматизация кота.</p>
+                </div>
+                <div class="ad-banner" style="border-left-color: #10b981;">
+                    <h4>📦 Майнкрафт 2</h4>
+                    <p>Скачать без СМС бесплатно на движке Си++.</p>
+                </div>
+            </div>
+            
+            <p style="text-align:center; font-size: 0.8rem; color: var(--text-muted); margin-top: 20px;">Нажмите <b>ESC</b> для вызова секретного меню деда.</p>
+        </aside>
+    </div>
+
+    <div class="news-ticker">
+        <div class="ticker-wrap">
+            <div class="ticker-move">
+                <div class="ticker-item"><span>СРОЧНО:</span> В Москве пьяный бомж уснул на рельсах и спокойно выспался.</div>
+                <div class="ticker-item"><span>ШОК:</span> Усатый признан главой ОПГ по краже детей в Ессентуках 2.</div>
+                <div class="ticker-item"><span>ВНИМАНИЕ:</span> Студент попытался сдать лабу по Ассемблеру и сдал! Ученые в шоке.</div>
+                <div class="ticker-item"><span>ДИКОСТЬ:</span> Мужчина перепутал iPhone 16 с пельменем.</div>
+                <div class="ticker-item"><span>КРИМИНАЛ:</span> Кот держит в страхе весь сервер Minecraft 2.</div>
+                <div class="ticker-item"><span>ВНИМАНИЕ:</span> Как похудеть на 10кг за 2 минуты? Нужно просто отсечь... [Читать далее]</div>
+                <div class="ticker-item"><span>ШОК:</span> На Невском стриптизерша отказалась танцевать, пока ей не объяснят указатели в Си.</div>
+                <div class="ticker-item"><span>АНОНС:</span> В 2027 году введут налог на подозрительные взгляды на пельмени.</div>
+                <div class="ticker-item"><span>ЗАКОН:</span> С 1 мая вводится штраф за использование буквы «Ы» без лицензии.</div>
+            </div>
+        </div>
+    </div>
+
+    <footer style="background: #090514; padding: 15px; text-align: center; border-top: 1px solid #221936; font-size: 0.9rem; color: var(--text-muted);">
+        © 2026 Purple Zephyr Inc. Все права защищены. ☢️ <a href="kultura.html" style="color: var(--accent-purple);">Разрешенные слова на нашем сайте</a>
+    </footer>
+
+    <script>
+        // Имитация живого онлайна
+        function updateOnline() {
+            const count = Math.floor(Math.random() * (1450 - 1380) + 1380);
+            document.getElementById('online-count').innerText = count;
+        }
+        setInterval(updateOnline, 3000);
+        updateOnline();
+
+        // Живой курс Сметанки
+        setInterval(() => {
+            const base = 1200.43;
+            const fluctuation = (Math.random() * 4 - 2).toFixed(2);
+            document.getElementById('crypto-val').innerText = (base + parseFloat(fluctuation)).toFixed(2) + '$';
+        }, 1500);
+
+        // Интерактивный кликер
+        let clicks = 0;
+        const btn = document.getElementById('click-me-btn');
+        const counter = document.getElementById('click-counter');
+
+        btn.addEventListener('click', () => {
+            clicks++;
+            counter.textContext = clicks; // Безопасное обновление текста
+            counter.innerText = clicks;
+            
+            if(clicks === 100) {
+                alert('🎉 ПОЗДРАВЛЯЕМ! Вы выиграли автомобиль LADA Aura! Для получения отправьте исходный код вашей лабы по Си администратору!');
+                clicks = 0;
+                counter.innerText = clicks;
+            }
+        });
+
+        // Пасхалка на кнопку ESC
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                alert('🚨 Активирован режим защиты от деда! Срочно учите указатели!');
+            }
+        });
+    </script>
+</body>
+</html>
