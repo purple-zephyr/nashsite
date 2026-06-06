@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Анекдоты</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #111; color: #eee; min-height: 100vh; }
+    .wrap { max-width: 700px; margin: 0 auto; padding: 20px; }
+    h1 { text-align: center; margin-bottom: 20px; font-size: 2rem; }
+    input {
+      width: 100%; padding: 14px 20px; font-size: 1.1rem;
+      border: 2px solid #333; border-radius: 12px;
+      background: #1e1e1e; color: #fff; margin-bottom: 24px; outline: none;
+    }
+    input:focus { border-color: #f5c518; }
+    .card {
+      background: #1e1e1e; border-radius: 16px; padding: 24px;
+      margin-bottom: 16px; font-size: 1.2rem; line-height: 1.6;
+      border: 2px solid transparent;
+    }
+    .card.best {
+      border-color: #f5c518;
+      background: #1a1a0a;
+    }
+    .nothing { text-align: center; color: #666; padding: 40px; }
+    .count { text-align: center; color: #888; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>😂 Анекдоты</h1>
+    <input type="text" id="search" placeholder="Поиск..." autofocus>
+    <p class="count" id="counter"></p>
+    <div id="list"></div>
+  </div>
+
+  <script src="jokes.js"></script>
+  <script>
+    const list   = document.getElementById('list');
+    const search = document.getElementById('search');
+    const count  = document.getElementById('counter');
+
+    function render(filter = '') {
+      const f = filter.toLowerCase();
+
+      // Разделяем на любимые и обычные
+      const best = [];
+      const rest = [];
+      jokes.forEach(j => {
+        if (j.startsWith('⭐')) best.push(j);
+        else rest.push(j);
+      });
+
+      // Фильтруем поиском
+      const filteredBest = f ? best.filter(j => j.toLowerCase().includes(f)) : best;
+      const filteredRest = f ? rest.filter(j => j.toLowerCase().includes(f)) : rest;
+
+      // Любимые сверху
+      const all = [...filteredBest, ...filteredRest];
+
+      count.textContent = all.length ? `Найдено: ${all.length}` : '';
+
+      list.innerHTML = all.length
+        ? all.map(j => {
+            const isBest = j.startsWith('⭐');
+            const text = isBest ? j.slice(1) : j; // убираем ⭐ из текста
+            return `<div class="card${isBest ? ' best' : ''}">${isBest ? '⭐ ' : ''}${text}</div>`;
+          }).join('')
+        : '<div class="nothing">Ничего не найдено 😔</div>';
+    }
+
+    search.addEventListener('input', e => render(e.target.value));
+    render();
+  </script>
+</body>
+</html>
